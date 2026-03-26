@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hypothyroid Clinic</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22black%22/><text y=%22.9em%22 font-size=%2290%22 fill=%22white%22 font-family=%22Arial, sans-serif%22 font-weight=%22bold%22 x=%2250%%22 text-anchor=%22middle%22>T</text></svg>">
+  <style>
+    :root { --bg: #f8fafc; --border: #cbd5e1; --accent: #0284c7; --pill-bg: #e0f2fe; --pill-text: #0369a1; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); padding: 20px; color: #334155; overflow: hidden; }
+
+    #token-hints {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+      min-height: 28px;
+    }
+    .th-chip {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+      border: 1px solid transparent;
+    }
+    .th-done   { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .th-next   { background: #0284c7; color: #fff; border-color: #0284c7; animation: blink-chip 1s ease-in-out infinite; }
+    .th-future { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
+    .th-skip   { background: #fef9c3; color: #854d0e; border-color: #fde68a; font-style: italic; }
+    @keyframes blink-chip {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.5; }
+    }
+
+    /* --- LOCK SCREEN --- */
+    #auth-screen { 
+      position: fixed; inset: 0; z-index: 9999; background: radial-gradient(circle at top right, #334155, #0f172a);
+      display: flex; justify-content: center; align-items: center; transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    .mac-lock-box { text-align: center; padding: 30px; transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease; }
+    .mac-avatar { width: 75px; height: 75px; margin: 0 auto 15px; border-radius: 50%; background: linear-gradient(135deg, #38bdf8, #0284c7); display: flex; justify-content: center; align-items: center; font-size: 1.8rem; font-weight: 600; color: white; box-shadow: 0 4px 15px rgba(0,0,0,0.4); }
+    .mac-lock-box h2 { color: #f8fafc; font-size: 1.2rem; margin-bottom: 5px; border: none; letter-spacing: 0.5px; }
+    .mac-subtitle { color: #94a3b8; font-size: 0.85rem; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+    .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+    .unlock-fade { opacity: 0; visibility: hidden; }
+    .unlock-scale { transform: scale(1.15); opacity: 0; }
+
+    /* --- MAIN LAYOUT --- */
+    .main-wrapper { display: flex; gap: 20px; max-width: 1400px; margin: 0 auto; align-items: flex-start; }
+    .left-pane { flex: 2; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+    .right-pane { flex: 1; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); position: sticky; top: 20px; display: flex; flex-direction: column; }
+    
+    h2, h3 { color: var(--accent); margin-bottom: 15px; border-bottom: 2px solid #f1f5f9; padding-bottom: 5px; }
+    .section { margin-bottom: 25px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fafafa; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+    .input-group { display: flex; flex-direction: column; }
+    label { font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; color: #475569; }
+    input[type="text"], input[type="number"], input[type="date"], select, textarea { padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.95rem; }
+    textarea { overflow-y: hidden; min-height: 200px; resize: none; font-size: 1rem; padding: 15px; line-height: 1.6; margin-bottom: 15px; border: 1px solid var(--border); border-radius: 6px; transition: height 0.2s ease; }
+    .btn-print { background: var(--accent); color: white; border: none; padding: 12px; font-size: 1rem; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; margin-bottom: 10px; }
+    .btn-print:hover { background: #0369a1; }
+    .btn-copy { background: #e2e8f0; color: #334155; border: none; padding: 12px; font-size: 1rem; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; margin-bottom: 10px;}
+    .btn-copy:hover { background: #cbd5e1; }
+    .btn-clear { background: #ef4444; color: white; border: none; padding: 12px; font-size: 1rem; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .btn-clear:hover { background: #dc2626; }
+    .status-pill { display: block; cursor: pointer; user-select: none; }
+    .status-pill input { display: none; }
+    .pill-text { display: flex; align-items: center; justify-content: center; height: 35px; padding: 0 12px; border-radius: 4px; font-size: 0.9rem; font-weight: 600; border: 1px solid var(--border); background: #f8fafc; color: #64748b; transition: all 0.2s ease; white-space: nowrap; }
+    .status-pill:hover .pill-text { border-color: #94a3b8; }
+    .status-pill input:checked + .warn-text { background: #fee2e2; border-color: #ef4444; color: #b91c1c; }
+    .tsh-abnormal { border: 2px solid #ef4444 !important; background: #fef2f2; }
+    #compliance-box { transition: 0.3s; opacity: 0.4; pointer-events: none; }
+    #compliance-box.active { opacity: 1; pointer-events: auto; }
+
+    /* --- QUICK ENTRY --- */
+    .quick-entry-section {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 2px solid #0284c7;
+      border-radius: 8px;
+      background: #f0f9ff;
+    }
+    .quick-entry-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .quick-entry-header h3 {
+      margin: 0;
+      border: none;
+      padding: 0;
+      font-size: 0.95rem;
+      color: #0284c7;
+    }
+    .legend-toggle {
+      font-size: 0.78rem;
+      color: #0284c7;
+      cursor: pointer;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      padding: 0;
+      font-weight: 600;
+    }
+    .quick-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    #quick-entry {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #7dd3fc;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-family: 'Courier New', monospace;
+      background: #fff;
+      color: #0f172a;
+    }
+    #quick-entry:focus { outline: 2px solid #0284c7; }
+    #quick-entry::placeholder { color: #94a3b8; font-size: 0.88rem; }
+    .btn-parse {
+      padding: 10px 18px;
+      background: #0284c7;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-parse:hover { background: #0369a1; }
+    #quick-error {
+      margin-top: 6px;
+      font-size: 0.82rem;
+      color: #dc2626;
+      min-height: 18px;
+      font-weight: 600;
+    }
+
+    /* --- LEGEND --- */
+    #legend-box {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid #bae6fd;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: #334155;
+      line-height: 1.7;
+    }
+    #legend-box.open { display: block; }
+    .legend-title { font-weight: 700; color: #0284c7; margin-bottom: 6px; }
+    .legend-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 20px;
+    }
+    .legend-row { display: flex; gap: 6px; }
+    .legend-key { font-family: 'Courier New', monospace; background: #e0f2fe; padding: 1px 6px; border-radius: 3px; color: #0369a1; font-weight: 700; white-space: nowrap; }
+    .legend-sep { color: #94a3b8; }
+
+    /* =========================================
+       PRINT CSS
+       ========================================= */
+    #print-area { display: none; }
+    
+    @media print {
+      @page { size: A4; margin: 0mm 15mm 15mm 15mm;}
+      body { background: white !important; padding: 0 !important; margin: 0 !important; font-family: "Georgia", "Times New Roman", serif; font-size: 12pt; color: #000; }
+      #auth-screen, .main-wrapper { display: none !important; }
+      #print-area { display: block !important; padding-top: 30mm !important; padding-left: 15mm !important; padding-right: 15mm !important; width: 100%; box-sizing: border-box; }
+      .print-header-line { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 15px; font-family: Arial, sans-serif; }
+      .ph-label { font-size: 9pt; color: #444; text-transform: uppercase; }
+      .ph-val { font-size: 11pt; font-weight: bold; color: #000; margin-left: 5px; text-transform: uppercase; }
+      .print-vitals-line { display: grid; grid-template-columns: 1fr 1fr 1fr 1.5fr; background-color: #f4f4f5 !important; border: 1px solid #d4d4d8; padding: 12px 0; border-radius: 4px; margin-bottom: 30px; font-family: Arial, sans-serif; }
+      .pv-item { display: flex; flex-direction: column; align-items: center; text-align: center; border-right: 1px solid #cbd5e1; }
+      .pv-item:last-child { border-right: none; }
+      .pv-label { font-size: 8pt; color: #555; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+      .pv-val { font-size: 11pt; color: #000; font-weight: bold; }
+      .pv-tsh .pv-val { font-size: 12pt; border-bottom: 2px solid #000; padding-bottom: 1px; display: inline-block; }
+      .pv-ref { font-size: 7pt; color: #666; margin-top: 2px; font-weight: normal; }
+      .print-rx-body { margin-top: 10px; padding-left: 5px; min-height: 450px; }
+      .rx-logo { font-family: "Times New Roman", serif; font-size: 2rem; line-height: 1; margin-bottom: 10px; color: #000; }
+      .rx-content { font-size: 13pt; line-height: 1.8; white-space: pre-wrap; padding-left: 15px; color: #111; }
+      .print-followup { border-top: 1px dashed #000; margin-top: 40px; padding-top: 10px; font-family: Arial, sans-serif; font-size: 11pt; }
+      .print-signature { border-top: 1px dashed #000; margin-top: 20px; padding-top: 15px; text-align: right; font-family: Arial, sans-serif; }
+      .sig-name { font-size: 13pt; font-weight: bold; }
+      .sig-creds { font-size: 9pt; color: #444; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="auth-screen">
+  <div class="mac-lock-box" id="mac-lock-box">
+    <div class="mac-avatar">MP</div>
+    <h2>Dr. Mit Panchani</h2>
+    <p class="mac-subtitle">Thyroid Module</p>
+  </div>
+</div>
+
+<div class="main-wrapper">
+  <div class="left-pane">
+    <h2>Hypothyroid OPD</h2>
+
+    <div class="quick-entry-section">
+      <div class="quick-entry-header">
+        <h3>⚡ Quick Entry</h3>
+        <button class="legend-toggle" onclick="toggleLegend()">📖 Show Legend</button>
+      </div>
+
+      <div class="quick-input-row">
+        <input type="text" id="quick-entry"
+          placeholder="e.g.  Ramila 45 f hypo 100 2.5 100 3m   or   Suresh 60 m hypo 100 4.8/2.1 125 3m pc">
+        <button class="btn-parse" onclick="parseQuickEntry()">→ Fill</button>
+      </div>
+     <div id="quick-error"></div>
+     <div id="token-hints"></div>
+
+      <div id="legend-box">
+        <div class="legend-title">Shorthand Reference</div>
+        <div class="legend-grid">
+          <div>
+            <div class="legend-row"><span class="legend-key">Name Age Gender</span><span class="legend-sep">—</span> e.g. Ramila 45 f</div>
+            <div class="legend-row"><span class="legend-key">4moa</span><span class="legend-sep">—</span> Months of amenorrhoea (females, optional)</div>
+            <div class="legend-row"><span class="legend-key">hypo / hyper</span><span class="legend-sep">—</span> Diagnosis</div>
+            <div class="legend-row"><span class="legend-key">new</span><span class="legend-sep">—</span> Newly diagnosed (no prior dose)</div>
+            <div class="legend-row"><span class="legend-key">100</span><span class="legend-sep">—</span> Current dose in µg (skip if new)</div>
+          </div>
+          <div>
+            <div class="legend-row"><span class="legend-key">2.5</span><span class="legend-sep">—</span> TSH only</div>
+            <div class="legend-row"><span class="legend-key">2.5/1.2</span><span class="legend-sep">—</span> TSH / FT4</div>
+            <div class="legend-row"><span class="legend-key">2.5/1.8/1.2</span><span class="legend-sep">—</span> TSH / FT3 / FT4</div>
+            <div class="legend-row"><span class="legend-key">100</span><span class="legend-sep">—</span> New/advised dose in µg</div>
+            <div class="legend-row"><span class="legend-key">carbi / ptu</span><span class="legend-sep">—</span> Drug name (hyper only)</div>
+            <div class="legend-row"><span class="legend-key">3m / 2w</span><span class="legend-sep">—</span> Duration (months / weeks)</div>
+            <div class="legend-row"><span class="legend-key">pc</span><span class="legend-sep">—</span> Poor compliance</div>
+          </div>
+        </div>
+        <div style="margin-top: 10px; color: #64748b; font-size: 0.78rem;">
+          Examples:<br>
+          <span style="font-family: monospace; color: #0369a1;">Ramila 45 f hypo 100 2.5 100 3m</span><br>
+          <span style="font-family: monospace; color: #0369a1;">Suresh 60 m hypo 100 4.8/2.1 125 3m pc</span><br>
+          <span style="font-family: monospace; color: #0369a1;">Priya 32 f 4moa hypo new 8.5 50 1m</span><br>
+          <span style="font-family: monospace; color: #0369a1;">Kiran 28 m hyper 20 0.01/2.8 10 carbi 6w</span>
+        </div>
+      </div>
+    </div>
+    <div class="section">
+      <div style="display: grid; grid-template-columns: 130px 70px 100px 1fr; gap: 15px; margin-bottom: 15px;">
+        <div class="input-group"><label>Date</label><input type="date" id="pt-date" onchange="generateNote()"></div>
+        <div class="input-group"><label>Age</label><input type="number" id="pt-age" oninput="generateNote()"></div>
+        <div class="input-group"><label>Gender</label>
+          <select id="pt-gender" onchange="generateNote()">
+            <option>Female</option>
+            <option>Male</option>
+          </select>
+        </div>
+        <div class="input-group"><label>Patient Name</label> <input type="text" id="pt-name" oninput="this.value = this.value.toUpperCase(); generateNote();"> </div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 180px 140px 1fr; gap: 15px; align-items: end;">
+        <div class="input-group"><label>Diagnosis</label>
+          <select id="pt-dx" onchange="generateNote()">
+            <option value="K/C/O Hypothyroid">K/C/O Hypothyroid</option>
+            <option value="Post-Op Hypothyroid">Post-Op Hypothyroid</option>
+            <option value="K/C/O Hyperthyroid">K/C/O Hyperthyroid</option>
+            <option value="Newly Diagnosed Hypothyroid">Newly Diagnosed Hypothyroid</option>
+            <option value="Newly Diagnosed Hyperthyroid">Newly Diagnosed Hyperthyroid</option>
+          </select>
+        </div>
+        <div class="input-group"><label>MOA (months)</label><input type="text" id="pt-moa" placeholder="e.g. 4" oninput="generateNote()"></div>
+        <div class="input-group" id="compliance-box">
+          <label style="color: #ef4444; font-weight: 700;">Compliance</label>
+          <label class="status-pill">
+            <input type="checkbox" id="comp-poor" onchange="generateNote()">
+            <span class="pill-text warn-text">Poor Compliance</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div style="display: grid; grid-template-columns: 75px 75px 100px 1fr 1fr; gap: 15px; align-items: end;">
+        <div class="input-group"><label>Wt (kg)</label><input type="number" id="pt-wt" oninput="generateNote()"></div>
+        <div class="input-group"><label>HR (/min)</label><input type="number" id="pt-hr" oninput="generateNote()"></div>
+        <div class="input-group"><label>BP (mmHg)</label><input type="text" id="pt-bp" placeholder="120/80"></div>
+        <div class="input-group"><label>Labs (TSH / FT3 / FT4)</label><input type="text" id="pt-labs" placeholder="e.g. 2.5  or  2.5/1.8/1.2" oninput="generateNote()"></div>
+        <div class="input-group">
+          <label>Current Dose</label>
+          <input type="text" id="pt-dose" placeholder="e.g. 100 µg" oninput="generateNote()">
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h3>Prescription Plan</h3>
+      <div class="grid-3">
+        <div class="input-group"><label>New Dose (µg)</label><input type="text" id="rx-dose" placeholder="e.g. 125" oninput="generateNote()"></div>
+        <div class="input-group"><label>Drug (hyper only)</label><input type="text" id="rx-drug" placeholder="e.g. Carbimazole / PTU" oninput="generateNote()"></div>
+        <div class="input-group"><label>Duration</label><input type="text" id="rx-duration" placeholder="e.g. 3 months" oninput="generateNote()"></div>
+      </div>
+      <div style="margin-top: 15px;">
+        <div class="input-group"><label>Follow-up</label>
+          <input type="text" id="rx-fu" placeholder="e.g. After 3 months with S. TSH" oninput="generateNote()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-pane">
+    <h3 style="margin-bottom: 5px;">Clinical Note & Rx</h3>
+    <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 10px;">Fully editable. Paste to EMR or Print.</p>
+    <textarea id="note-box" oninput="saveFormData(); autoResizeText();"></textarea>    
+    <div style="display: flex; flex-direction: column;">
+      <button class="btn-copy" onclick="copyNote()" id="copy-btn">📋 Copy Note</button>
+      <button class="btn-print" onclick="preparePrint()">🖨️ Print Prescription</button>
+      <button class="btn-clear" onclick="clearPatient()">🗑️ Clear for Next Patient</button>
+    </div>
+  </div>
+</div>
+
+<div id="print-area">
+  <div class="print-header-line">
+    <div class="ph-left"><span class="ph-label">Patient Name:</span> <span class="ph-val" id="pr-name"></span></div>
+    <div class="ph-center"><span class="ph-label">Age/Sex:</span> <span class="ph-val" id="pr-age-sex"></span></div>
+    <div class="ph-right"><span class="ph-label">Date:</span> <span class="ph-val" id="pr-date"></span></div>
+  </div>
+  <div class="print-vitals-line">
+    <div class="pv-item"><span class="pv-label">Weight</span> <span class="pv-val" id="pr-wt"></span></div>
+    <div class="pv-item"><span class="pv-label">BP</span> <span class="pv-val" id="pr-bp"></span></div>
+    <div class="pv-item"><span class="pv-label">HR</span> <span class="pv-val" id="pr-hr"></span></div>
+    <div class="pv-item pv-tsh"><span class="pv-label">S. TSH</span> <span class="pv-val" id="pr-tsh"></span></div>
+  </div>
+  <div class="print-rx-body">
+    <div class="rx-logo">℞</div>
+    <div class="rx-content" id="pr-note"></div>
+  </div>
+  <div class="print-followup"><b>Advised Follow-up:</b> <span id="pr-fu"></span></div>
+  <div class="print-signature">
+    <div class="sig-name">Dr. Mit Panchani</div>
+    <div class="sig-creds">MBBS, MD General Medicine<br>Fellow in 2D Echo, PGCIH</div>
+  </div>
+</div>
+
+<script>
+
+  // ==========================================
+  // AUTO-RESIZE TEXTAREA
+  // ==========================================
+  function autoResizeText() {
+    const tx = document.getElementById('note-box');
+    tx.style.height = 'auto'; 
+    tx.style.height = (tx.scrollHeight) + 'px';
+  }
+
+  // ==========================================
+  // LOCK SCREEN
+    // ==========================================
+  
+let pinBuffer = "";
+const lockScreen = document.getElementById('auth-screen');
+const lockBox = document.getElementById('mac-lock-box');
+
+document.addEventListener('keyup', function(e) {
+  if (lockScreen.classList.contains('unlock-fade')) return;
+  if (!isNaN(e.key) && e.key.trim() !== "") {
+    pinBuffer += e.key;
+    if (pinBuffer.length === 4) {
+      if (pinBuffer === "3342") {
+        lockBox.classList.add('unlock-scale');
+        lockScreen.classList.add('unlock-fade');
+        setTimeout(() => {
+          lockScreen.style.display = 'none';
+          document.body.style.overflow = 'auto';
+          pinBuffer = "";
+        }, 500);
+      } else {
+        lockBox.classList.remove('shake');
+        void lockBox.offsetWidth;
+        lockBox.classList.add('shake');
+        pinBuffer = "";
+      }
+    }
+  } else if (e.key === 'Backspace') pinBuffer = pinBuffer.slice(0, -1);
+});
+  // ==========================================
+  // BP AUTO-FORMATTER
+  // ==========================================
+  document.getElementById('pt-bp').addEventListener('input', function (e) {
+    if (e.inputType === 'deleteContentBackward') { generateNote(); return; }
+    let v = this.value;
+    if (v.length === 3 && !v.includes('/')) { this.value = v + '/'; }
+    generateNote();
+  });
+
+  // ==========================================
+  // LEGEND TOGGLE
+  // ==========================================
+  function toggleLegend() {
+    const box = document.getElementById('legend-box');
+    const btn = document.querySelector('.legend-toggle');
+    box.classList.toggle('open');
+    btn.textContent = box.classList.contains('open') ? '📖 Hide Legend' : '📖 Show Legend';
+  }
+
+  // ==========================================
+  // QUICK ENTRY PARSER
+  // ==========================================
+  function parseQuickEntry() {
+    const raw = document.getElementById('quick-entry').value.trim();
+    const errEl = document.getElementById('quick-error');
+    errEl.textContent = '';
+
+    if (!raw) { errEl.textContent = 'Please enter something first.'; return; }
+
+    const tokens = raw.toLowerCase().split(/\s+/);
+    let i = 0;
+
+    // --- NAME: collect words until we hit a number ---
+    let nameParts = [];
+    while (i < tokens.length && isNaN(parseFloat(tokens[i]))) {
+      // stop collecting name once we hit hypo/hyper/new/pc/moa.../carbi/ptu
+      if (['hypo','hyper','new','pc','carbi','ptu'].includes(tokens[i])) break;
+      if (/^\d+moa$/.test(tokens[i])) break;
+      nameParts.push(tokens[i]);
+      i++;
+    }
+    const name = nameParts.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+    // --- AGE ---
+    let age = '';
+    if (i < tokens.length && /^\d+$/.test(tokens[i])) { age = tokens[i]; i++; }
+
+    // --- GENDER ---
+    let gender = 'Female';
+    if (i < tokens.length && (tokens[i] === 'm' || tokens[i] === 'f')) {
+      gender = tokens[i] === 'm' ? 'Male' : 'Female';
+      i++;
+    }
+
+    // --- MOA (optional, females only) ---
+    let moa = '';
+    if (i < tokens.length && /^\d+moa$/.test(tokens[i])) {
+      moa = tokens[i].replace('moa', '');
+      i++;
+    }
+
+    // --- CONDITION ---
+    let condition = '';
+    if (i < tokens.length && (tokens[i] === 'hypo' || tokens[i] === 'hyper')) {
+      condition = tokens[i]; i++;
+    } else {
+      errEl.textContent = 'Could not find hypo or hyper in entry.'; return;
+    }
+
+    // --- CURRENT DOSE or NEW ---
+    let isNew = false;
+    let currentDose = '';
+    if (i < tokens.length) {
+      if (tokens[i] === 'new') { isNew = true; i++; }
+      else if (/^\d+(\.\d+)?$/.test(tokens[i])) { currentDose = tokens[i]; i++; }
+    }
+
+    // --- LABS: TSH only, TSH/FT4, or TSH/FT3/FT4 ---
+    let tsh = '', ft3 = '', ft4 = '';
+    if (i < tokens.length && /^[\d.]+([/][\d.]+)*$/.test(tokens[i])) {
+      const parts = tokens[i].split('/');
+      tsh  = parts[0] || '';
+      if (parts.length === 2) { ft4  = parts[1]; }         // two values = TSH + FT4
+      if (parts.length === 3) { ft3  = parts[1]; ft4 = parts[2]; } // three = TSH + FT3 + FT4
+      i++;
+    }
+
+    // --- NEW DOSE ---
+    let newDose = '';
+    if (i < tokens.length && /^\d+(\.\d+)?$/.test(tokens[i])) { newDose = tokens[i]; i++; }
+
+    // --- DRUG NAME (hyper only: carbi / ptu) ---
+    let drug = '';
+    if (i < tokens.length && (tokens[i] === 'carbi' || tokens[i] === 'ptu')) {
+      drug = tokens[i] === 'carbi' ? 'Carbimazole' : 'PTU';
+      i++;
+    }
+
+    // --- DURATION ---
+    let durationRaw = '';
+    let durationText = '';
+    if (i < tokens.length && /^\d+(m|w)$/.test(tokens[i])) {
+      durationRaw = tokens[i];
+      const num = durationRaw.match(/\d+/)[0];
+      const unit = durationRaw.slice(-1);
+      durationText = num + (unit === 'm' ? (num === '1' ? ' month' : ' months') : (num === '1' ? ' week' : ' weeks'));
+      i++;
+    }
+
+    // --- POOR COMPLIANCE ---
+    let poorCompliance = false;
+    if (i < tokens.length && tokens[i] === 'pc') { poorCompliance = true; i++; }
+
+    // ---- POPULATE FORM FIELDS ----
+    if (name) { document.getElementById('pt-name').value = name.toUpperCase(); }
+    if (age)  { document.getElementById('pt-age').value = age; }
+    document.getElementById('pt-gender').value = gender;
+    document.getElementById('pt-moa').value = moa;
+
+    // Diagnosis
+    let dxVal = '';
+    if (condition === 'hypo') {
+      dxVal = isNew ? 'Newly Diagnosed Hypothyroid' : 'K/C/O Hypothyroid';
+    } else {
+      dxVal = isNew ? 'Newly Diagnosed Hyperthyroid' : 'K/C/O Hyperthyroid';
+    }
+    document.getElementById('pt-dx').value = dxVal;
+
+    document.getElementById('pt-dose').value = currentDose ? currentDose + ' µg' : '';
+    document.getElementById('pt-labs').value = buildLabsDisplay(tsh, ft3, ft4);
+    document.getElementById('rx-dose').value = newDose ? newDose + ' µg' : '';
+    document.getElementById('rx-drug').value = drug;
+    document.getElementById('rx-duration').value = durationText;
+    document.getElementById('comp-poor').checked = poorCompliance;
+    if (poorCompliance) {
+      document.getElementById('compliance-box').classList.add('active');
+    } else {
+      document.getElementById('compliance-box').classList.remove('active');
+    }
+
+    // Follow-up
+    let fuText = '';
+    if (durationText) {
+      if (condition === 'hypo') {
+        fuText = `After ${durationText} with S. TSH`;
+      } else {
+        fuText = `After ${durationText} with S. TSH + FT4`;
+      }
+    }
+    document.getElementById('rx-fu').value = fuText;
+
+    // ---- BUILD NOTE ----
+    let note = buildNote({ condition, isNew, currentDose, tsh, ft3, ft4, newDose, drug, durationText, poorCompliance, moa, gender });
+    document.getElementById('note-box').value = note;
+    saveFormData();
+    autoResizeText();
+  }
+
+  function buildLabsDisplay(tsh, ft3, ft4) {
+    let parts = [];
+    if (tsh) parts.push('TSH: ' + tsh);
+    if (ft3) parts.push('FT3: ' + ft3);
+    if (ft4) parts.push('FT4: ' + ft4);
+    return parts.join(' | ');
+  }
+
+  function buildNote({ condition, isNew, currentDose, tsh, ft3, ft4, newDose, drug, durationText, poorCompliance, moa, gender }) {
+    let note = '';
+    const isHypo = condition === 'hypo';
+
+    // --- DIAGNOSIS LINE ---
+    if (isNew) {
+      note += isHypo ? 'NEWLY DIAGNOSED HYPOTHYROIDISM' : 'NEWLY DIAGNOSED HYPERTHYROIDISM';
+    } else {
+      if (isHypo) {
+        note += `K/C/O HYPOTHYROIDISM ON TAB. THYROXINE ${currentDose ? currentDose + ' µg' : '____ µg'}`;
+      } else {
+        let drugLine = drug ? `TAB. ${drug.toUpperCase()}` : 'ANTI-THYROID MEDICATION';
+        note += `K/C/O HYPERTHYROIDISM ON ${drugLine}${currentDose ? ' ' + currentDose + ' mg' : ''}`;
+      }
+    }
+
+    // --- MOA (females only) ---
+    if (moa && gender === 'Female') {
+      note += `\n* MOA: ${moa} MONTH${parseInt(moa) > 1 ? 'S' : ''} OF AMENORRHOEA`;
+    }
+
+    note += '\n\n';
+
+    // --- LABS ---
+    if (tsh) {
+      note += `S. TSH: ${tsh} µIU/mL`;
+      if (ft3 && ft4) {
+        note += `    |    FT3: ${ft3}    |    FT4: ${ft4}`;
+      } else if (ft4) {
+        note += `    |    FT4: ${ft4}`;
+      }
+      note += '\n';
+    }
+
+    // --- COMPLIANCE ---
+    if (poorCompliance) {
+      note += `\nPOOR COMPLIANCE NOTED.\nCounselled patient regarding strict empty stomach morning dosing\nand avoiding food/tea for 45 minutes after tablet.\n`;
+    }
+
+    // --- DIETARY ADVICE (hypo only) ---
+    if (isHypo) {
+      note += `\nDIETARY ADVICE:\n- Use iodised salt (Tata, Nirma, etc.); avoid sindha namak (non-iodised)\n- Avoid cabbage / cauliflower (કોબી / ફૂલાવર)\n`;
+    }
+
+    // --- PRESCRIPTION ---
+    note += `\nADV:`;
+    if (isHypo) {
+      note += `\n- TAB. THYROXINE ${newDose ? newDose + ' µg' : '____ µg'} OD EMPTY STOMACH (MORNING)`;
+    } else {
+      let rxDrug = drug ? drug.toUpperCase() : '___________';
+      note += `\n- TAB. ${rxDrug} ${newDose ? newDose + ' mg' : '____ mg'} OD`;
+    }
+    if (durationText) {
+      note += `\n  FOR ${durationText.toUpperCase()}`;
+    }
+
+    return note;
+  }
+
+  // ==========================================
+  // GENERATE NOTE FROM FORM FIELDS
+  // ==========================================
+  function generateNote() {
+    const dx      = document.getElementById('pt-dx').value;
+    const dose    = document.getElementById('pt-dose').value;
+    const moa     = document.getElementById('pt-moa').value;
+    const labs    = document.getElementById('pt-labs').value;
+    const manualRx= document.getElementById('rx-dose').value;
+    const drug    = document.getElementById('rx-drug').value;
+    const duration= document.getElementById('rx-duration').value;
+    const fu      = document.getElementById('rx-fu').value;
+    const compPoor= document.getElementById('comp-poor').checked;
+    const gender  = document.getElementById('pt-gender').value;
+
+    const isHypo  = !dx.toLowerCase().includes('hyper');
+    const isNew   = dx.toLowerCase().includes('newly');
+
+    let note = '';
+
+    // Diagnosis line
+    if (isNew) {
+      note += dx.toUpperCase();
+    } else {
+      if (isHypo) {
+        note += `K/C/O HYPOTHYROIDISM ON TAB. THYROXINE ${dose ? dose.toUpperCase() : '____ µg'}`;
+      } else {
+        note += `K/C/O HYPERTHYROIDISM${drug ? ' ON TAB. ' + drug.toUpperCase() : ''}${dose ? ' ' + dose : ''}`;
+      }
+    }
+
+    if (moa && gender === 'Female') {
+      note += `\n* MOA: ${moa} MONTH${parseInt(moa) > 1 ? 'S' : ''} OF AMENORRHOEA`;
+    }
+    note += '\n\n';
+
+    if (labs) { note += `${labs}\n`; }
+
+    if (compPoor) {
+      note += `\nPOOR COMPLIANCE NOTED.\nCounselled patient regarding strict empty stomach morning dosing\nand avoiding food/tea for 45 minutes after tablet.\n`;
+    }
+
+    if (isHypo) {
+      note += `\nDIETARY ADVICE:\n- Use iodised salt (Tata, Nirma, etc.); avoid sindha namak (non-iodised)\n- Avoid cabbage / cauliflower (કોબી / ફૂલાવર)\n`;
+    }
+
+    note += `\nADV:`;
+    if (isHypo) {
+      note += `\n- TAB. THYROXINE ${manualRx || '____ µg'} OD EMPTY STOMACH (MORNING)`;
+    } else {
+      note += `\n- TAB. ${drug ? drug.toUpperCase() : '___________'} ${manualRx || '____ mg'} OD`;
+    }
+    if (duration) { note += `\n  FOR ${duration.toUpperCase()}`; }
+    if (fu) { note += `\n\nFOLLOW UP: ${fu}`; }
+
+    document.getElementById('note-box').value = note;
+    saveFormData();
+    autoResizeText();
+  }
+
+  // ==========================================
+  // LOCAL STORAGE
+  // ==========================================
+  function saveFormData() {
+    const formData = {
+      name: document.getElementById('pt-name').value,
+      age: document.getElementById('pt-age').value,
+      gender: document.getElementById('pt-gender').value,
+      moa: document.getElementById('pt-moa').value,
+      date: document.getElementById('pt-date').value,
+      dx: document.getElementById('pt-dx').value,
+      dose: document.getElementById('pt-dose').value,
+      labs: document.getElementById('pt-labs').value,
+      wt: document.getElementById('pt-wt').value,
+      bp: document.getElementById('pt-bp').value,
+      hr: document.getElementById('pt-hr').value,
+      compPoor: document.getElementById('comp-poor').checked,
+      rxDose: document.getElementById('rx-dose').value,
+      rxDrug: document.getElementById('rx-drug').value,
+      rxDuration: document.getElementById('rx-duration').value,
+      rxFu: document.getElementById('rx-fu').value,
+      customNote: document.getElementById('note-box').value
+    };
+    localStorage.setItem('thyroidAutoSave', JSON.stringify(formData));
+  }
+
+  function loadFormData() {
+    const saved = localStorage.getItem('thyroidAutoSave');
+    if (saved) {
+      const data = JSON.parse(saved);
+      document.getElementById('pt-name').value     = data.name || '';
+      document.getElementById('pt-age').value      = data.age || '';
+      document.getElementById('pt-gender').value   = data.gender || 'Female';
+      document.getElementById('pt-moa').value      = data.moa || '';
+      if (data.date) document.getElementById('pt-date').value = data.date;
+      document.getElementById('pt-dx').value       = data.dx || 'K/C/O Hypothyroid';
+      document.getElementById('pt-dose').value     = data.dose || '';
+      document.getElementById('pt-labs').value     = data.labs || '';
+      document.getElementById('pt-wt').value       = data.wt || '';
+      document.getElementById('pt-bp').value       = data.bp || '';
+      document.getElementById('pt-hr').value       = data.hr || '';
+      document.getElementById('comp-poor').checked = data.compPoor || false;
+      document.getElementById('rx-dose').value     = data.rxDose || '';
+      document.getElementById('rx-drug').value     = data.rxDrug || '';
+      document.getElementById('rx-duration').value = data.rxDuration || '';
+      document.getElementById('rx-fu').value       = data.rxFu || '';
+      if (data.customNote) {
+        document.getElementById('note-box').value = data.customNote;
+        autoResizeText();
+      } else {
+        generateNote();
+      }
+    } else {
+      document.getElementById('pt-date').valueAsDate = new Date();
+      generateNote();
+    }
+  }
+
+  function clearPatient() {
+    if (confirm("Clear all data for the next patient?")) {
+      localStorage.removeItem('thyroidAutoSave');
+      document.getElementById('pt-name').value     = '';
+      document.getElementById('pt-age').value      = '';
+      document.getElementById('pt-gender').value   = 'Female';
+      document.getElementById('pt-moa').value      = '';
+      document.getElementById('pt-date').valueAsDate = new Date();
+      document.getElementById('pt-dx').value       = 'K/C/O Hypothyroid';
+      document.getElementById('pt-dose').value     = '';
+      document.getElementById('pt-labs').value     = '';
+      document.getElementById('pt-wt').value       = '';
+      document.getElementById('pt-bp').value       = '';
+      document.getElementById('pt-hr').value       = '';
+      document.getElementById('comp-poor').checked = false;
+      document.getElementById('rx-dose').value     = '';
+      document.getElementById('rx-drug').value     = '';
+      document.getElementById('rx-duration').value = '';
+      document.getElementById('rx-fu').value       = '';
+      document.getElementById('quick-entry').value = '';
+      document.getElementById('quick-error').textContent = '';
+      document.getElementById('compliance-box').classList.remove('active');
+      generateNote();
+    }
+  }
+
+  window.onload = loadFormData;
+
+  // ==========================================
+  // PRINT & COPY
+  // ==========================================
+  function copyNote() {
+    navigator.clipboard.writeText(document.getElementById('note-box').value).then(() => {
+      let btn = document.getElementById('copy-btn');
+      btn.innerText = "✅ Copied!";
+      setTimeout(() => btn.innerText = "📋 Copy Note", 2000);
+    });
+  }
+
+  function preparePrint() {
+    document.getElementById('pr-name').innerText = document.getElementById('pt-name').value || "........................";
+    let age = document.getElementById('pt-age').value;
+    let gender = document.getElementById('pt-gender').value.charAt(0);
+    let moa = document.getElementById('pt-moa').value;
+    let ageSexStr = age ? `${age} Yrs / ${gender}` : `..... Yrs / ${gender}`;
+    if (moa) ageSexStr += ` (MOA: ${moa}m)`;
+    document.getElementById('pr-age-sex').innerText = ageSexStr;
+    let d = document.getElementById('pt-date').value;
+    document.getElementById('pr-date').innerText = d ? new Date(d).toLocaleDateString('en-GB') : "..../..../......";
+    document.getElementById('pr-wt').innerText = document.getElementById('pt-wt').value ? document.getElementById('pt-wt').value + " kg" : "____ kg";
+    document.getElementById('pr-bp').innerText = document.getElementById('pt-bp').value ? document.getElementById('pt-bp').value + " mmHg" : "____ mmHg";
+    document.getElementById('pr-hr').innerText = document.getElementById('pt-hr').value ? document.getElementById('pt-hr').value + " /min" : "____ /min";
+
+    // TSH from labs field
+    let labsVal = document.getElementById('pt-labs').value;
+    let tshDisplay = '____';
+    if (labsVal) {
+      let tshMatch = labsVal.match(/TSH:\s*([\d.]+)/i);
+      tshDisplay = tshMatch ? tshMatch[1] : labsVal.split('|')[0].trim();
+    }
+    document.getElementById('pr-tsh').innerText = tshDisplay;
+
+    let noteText = document.getElementById('note-box').value
+      .replace(/DIETARY ADVICE:/g, "<br><b>DIETARY ADVICE:</b>")
+      .replace(/ADV:/g, "<br><b>ADV:</b>")
+      .replace(/TAB\. THYROXINE/g, "<b>TAB. THYROXINE</b>")
+      .replace(/TAB\. CARBIMAZOLE/g, "<b>TAB. CARBIMAZOLE</b>")
+      .replace(/TAB\. PTU/g, "<b>TAB. PTU</b>")
+      .replace(/\n/g, "<br>");
+    document.getElementById('pr-note').innerHTML = noteText;
+    document.getElementById('pr-fu').innerText = document.getElementById('rx-fu').value || "______________________";
+    window.print();
+  }
+
+  // Also allow Enter key on quick entry field
+const qe = document.getElementById('quick-entry');
+qe.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') parseQuickEntry();
+});
+qe.addEventListener('keyup', updateTokenHints);
+qe.addEventListener('focus', function() {
+  document.getElementById('legend-box').classList.add('open');
+  document.querySelector('.legend-toggle').textContent = '📖 Hide Legend';
+  updateTokenHints();
+});
+qe.addEventListener('blur', function() {
+  document.getElementById('legend-box').classList.remove('open');
+  document.querySelector('.legend-toggle').textContent = '📖 Show Legend';
+});
+
+const TOKEN_SEQUENCE = [
+  { id: 'name',     label: 'Name',         hint: 'First/Last name' },
+  { id: 'age',      label: 'Age',          hint: 'e.g. 45' },
+  { id: 'gender',   label: 'm / f',        hint: 'Gender' },
+  { id: 'moa',      label: '4moa',         hint: 'optional, females' },
+  { id: 'cond',     label: 'hypo / hyper', hint: 'Condition' },
+  { id: 'cdose',    label: 'dose / new',   hint: 'Current dose µg or new' },
+  { id: 'labs',     label: 'TSH/FT4',      hint: 'e.g. 2.5 or 2.5/1.2' },
+  { id: 'newdose',  label: 'new dose',     hint: 'Advised dose µg' },
+  { id: 'drug',     label: 'carbi / ptu',  hint: 'hyper only, optional' },
+  { id: 'duration', label: '3m / 2w',      hint: 'Duration' },
+  { id: 'pc',       label: 'pc',           hint: 'optional, poor compliance' },
+];
+
+function updateTokenHints() {
+  const raw = document.getElementById('quick-entry').value;
+  const tokens = raw.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const hints = document.getElementById('token-hints');
+  if (!raw.trim()) { hints.innerHTML = ''; return; }
+
+  // figure out how many tokens are "done"
+  let done = 0;
+  let i = 0;
+  let seq = 0; // position in TOKEN_SEQUENCE
+
+  // name: words until a number or keyword
+  let nameWords = 0;
+  while (i < tokens.length) {
+    const t = tokens[i];
+    if (!isNaN(parseFloat(t)) || ['hypo','hyper','new','pc','carbi','ptu'].includes(t) || /^\d+moa$/.test(t)) break;
+    nameWords++; i++;
+  }
+  if (nameWords > 0) done = Math.max(done, 1); // name done
+  seq = 1;
+
+  if (i < tokens.length && /^\d+$/.test(tokens[i])) { i++; done = Math.max(done, 2); } // age
+  seq = 2;
+  if (i < tokens.length && (tokens[i] === 'm' || tokens[i] === 'f')) { i++; done = Math.max(done, 3); } // gender
+  seq = 3;
+  if (i < tokens.length && /^\d+moa$/.test(tokens[i])) { i++; done = Math.max(done, 4); } // moa
+  seq = 4;
+  if (i < tokens.length && (tokens[i] === 'hypo' || tokens[i] === 'hyper')) { i++; done = Math.max(done, 5); } // cond
+  seq = 5;
+  if (i < tokens.length && (/^\d+(\.\d+)?$/.test(tokens[i]) || tokens[i] === 'new')) { i++; done = Math.max(done, 6); } // cdose
+  seq = 6;
+  if (i < tokens.length && /^[\d.]+([/][\d.]+)*$/.test(tokens[i])) { i++; done = Math.max(done, 7); } // labs
+  seq = 7;
+  if (i < tokens.length && /^\d+(\.\d+)?$/.test(tokens[i])) { i++; done = Math.max(done, 8); } // newdose
+  seq = 8;
+  if (i < tokens.length && (tokens[i] === 'carbi' || tokens[i] === 'ptu')) { i++; done = Math.max(done, 9); } // drug
+  seq = 9;
+  if (i < tokens.length && /^\d+(m|w)$/.test(tokens[i])) { i++; done = Math.max(done, 10); } // duration
+  seq = 10;
+  if (i < tokens.length && tokens[i] === 'pc') { done = Math.max(done, 11); } // pc
+
+  // render chips
+  hints.innerHTML = TOKEN_SEQUENCE.map((tok, idx) => {
+    const pos = idx + 1;
+    // skip optional tokens that weren't used and we're past them
+    const isOptional = ['moa','drug','pc'].includes(tok.id);
+    if (pos < done && isOptional && !(
+      (tok.id === 'moa' && /\d+moa/.test(raw.toLowerCase())) ||
+      (tok.id === 'drug' && (raw.toLowerCase().includes('carbi') || raw.toLowerCase().includes('ptu'))) ||
+      (tok.id === 'pc' && raw.toLowerCase().includes(' pc'))
+    )) {
+      return `<span class="th-chip th-skip" title="${tok.hint}">${tok.label} (opt)</span>`;
+    }
+    if (pos <= done)      return `<span class="th-chip th-done"  title="${tok.hint}">✓ ${tok.label}</span>`;
+    if (pos === done + 1) return `<span class="th-chip th-next"  title="${tok.hint}">→ ${tok.label}</span>`;
+                          return `<span class="th-chip th-future" title="${tok.hint}">${tok.label}</span>`;
+  }).join('');
+}
+
+</script>
+</body>
+</html>
