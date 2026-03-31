@@ -27,7 +27,7 @@
     .th-done   { background: #dcfce7; color: #166534; border-color: #86efac; }
     .th-next   { background: #0284c7; color: #fff; border-color: #0284c7; animation: blink-chip 1s ease-in-out infinite; }
     .th-future { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
-    .th-skip   { background: #fef9c3; color: #854d0e; border-color: #fde68a; font-style: italic; }
+    .th-skip   { background: #fef9c3; color: #854d0e; border-color: #fde68a; font-style: italic; text-decoration: line-through; }
     @keyframes blink-chip {
       0%, 100% { opacity: 1; }
       50%       { opacity: 0.5; }
@@ -82,29 +82,6 @@
       border-radius: 8px;
       background: #f0f9ff;
     }
-    .quick-entry-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-    }
-    .quick-entry-header h3 {
-      margin: 0;
-      border: none;
-      padding: 0;
-      font-size: 0.95rem;
-      color: #0284c7;
-    }
-    .legend-toggle {
-      font-size: 0.78rem;
-      color: #0284c7;
-      cursor: pointer;
-      text-decoration: underline;
-      background: none;
-      border: none;
-      padding: 0;
-      font-weight: 600;
-    }
     .quick-input-row {
       display: flex;
       gap: 8px;
@@ -142,28 +119,15 @@
       font-weight: 600;
     }
 
-    /* --- LEGEND --- */
-    #legend-box {
-      display: none;
-      margin-top: 12px;
-      padding: 12px;
-      background: #fff;
-      border: 1px solid #bae6fd;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      color: #334155;
-      line-height: 1.7;
+    a.toggle-fields {
+      font-size: 0.85rem;
+      color: #0284c7;
+      text-decoration: underline;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-block;
+      margin-top: 8px;
     }
-    #legend-box.open { display: block; }
-    .legend-title { font-weight: 700; color: #0284c7; margin-bottom: 6px; }
-    .legend-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4px 20px;
-    }
-    .legend-row { display: flex; gap: 6px; }
-    .legend-key { font-family: 'Courier New', monospace; background: #e0f2fe; padding: 1px 6px; border-radius: 3px; color: #0369a1; font-weight: 700; white-space: nowrap; }
-    .legend-sep { color: #94a3b8; }
 
     /* =========================================
        PRINT CSS
@@ -171,27 +135,66 @@
     #print-area { display: none; }
     
     @media print {
-      @page { size: A4; margin: 0mm 15mm 15mm 15mm;}
-      body { background: white !important; padding: 0 !important; margin: 0 !important; font-family: "Georgia", "Times New Roman", serif; font-size: 12pt; color: #000; }
+      @page { size: A4; margin: 30mm 15mm 15mm 15mm; }
+      body { background: white !important; padding: 0 !important; margin: 0 !important; font-family: "Segoe UI", Arial, sans-serif; color: #000; }
       #auth-screen, .main-wrapper { display: none !important; }
-      #print-area { display: block !important; padding-top: 30mm !important; padding-left: 15mm !important; padding-right: 15mm !important; width: 100%; box-sizing: border-box; }
-      .print-header-line { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 15px; font-family: Arial, sans-serif; }
-      .ph-label { font-size: 9pt; color: #444; text-transform: uppercase; }
-      .ph-val { font-size: 11pt; font-weight: bold; color: #000; margin-left: 5px; text-transform: uppercase; }
-      .print-vitals-line { display: grid; grid-template-columns: 1fr 1fr 1fr 1.5fr; background-color: #f4f4f5 !important; border: 1px solid #d4d4d8; padding: 12px 0; border-radius: 4px; margin-bottom: 30px; font-family: Arial, sans-serif; }
-      .pv-item { display: flex; flex-direction: column; align-items: center; text-align: center; border-right: 1px solid #cbd5e1; }
-      .pv-item:last-child { border-right: none; }
-      .pv-label { font-size: 8pt; color: #555; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
-      .pv-val { font-size: 11pt; color: #000; font-weight: bold; }
-      .pv-tsh .pv-val { font-size: 12pt; border-bottom: 2px solid #000; padding-bottom: 1px; display: inline-block; }
-      .pv-ref { font-size: 7pt; color: #666; margin-top: 2px; font-weight: normal; }
-      .print-rx-body { margin-top: 10px; padding-left: 5px; min-height: 450px; }
-      .rx-logo { font-family: "Times New Roman", serif; font-size: 2rem; line-height: 1; margin-bottom: 10px; color: #000; }
-      .rx-content { font-size: 13pt; line-height: 1.8; white-space: pre-wrap; padding-left: 15px; color: #111; }
-      .print-followup { border-top: 1px dashed #000; margin-top: 40px; padding-top: 10px; font-family: Arial, sans-serif; font-size: 11pt; }
-      .print-signature { border-top: 1px dashed #000; margin-top: 20px; padding-top: 15px; text-align: right; font-family: Arial, sans-serif; }
-      .sig-name { font-size: 13pt; font-weight: bold; }
-      .sig-creds { font-size: 9pt; color: #444; }
+      #print-area { display: block !important; width: 100%; box-sizing: border-box; }
+      
+      /* Clean Patient Strip */
+      .print-patient-band { 
+        display: flex; justify-content: space-between; background: #f8fafc !important; 
+        border: 1px solid #cbd5e1; padding: 12px 15px; border-radius: 8px; margin-bottom: 25px; 
+        -webkit-print-color-adjust: exact; 
+      }
+      .p-field { font-size: 9pt; color: #64748b; text-transform: uppercase; font-weight: bold; }
+      .p-val { font-size: 11pt; color: #0f172a; font-weight: bold; margin-left: 6px; }
+
+      /* Vitals Horizontal Cards */
+      .print-vitals-row { 
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; 
+      }
+      .v-card { 
+        border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; text-align: center; background: #fff; 
+      }
+      .v-card.tsh-card { 
+        background: #f0f9ff !important; border-color: #bae6fd; -webkit-print-color-adjust: exact; 
+      }
+      .v-label { 
+        display: block; font-size: 8pt; color: #64748b; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; 
+      }
+      .v-val { font-size: 13pt; font-weight: bold; color: #0f172a; }
+
+      /* ℞ Block & Structured Content */
+      .print-rx-body { min-height: 400px; padding-left: 10px; margin-top: 10px; }
+
+      /* Shrunk Font Sizes */
+      .rx-dx-block { font-weight: 800; font-size: 11pt; margin-bottom: 8px; text-transform: uppercase; color: #000; }
+      .rx-labs { font-size: 10pt; font-weight: bold; color: #334155; margin-bottom: 10px; }
+      .rx-alert { color: #b91c1c; font-size: 10pt; font-weight: bold; margin: 10px 0; }
+      .rx-diet { background: #f8fafc !important; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 9pt; margin: 10px 0; -webkit-print-color-adjust: exact; }
+      
+      /* Rx Symbol now flows inline */
+      .rx-symbol { font-size: 34pt; font-family: "Times New Roman", serif; margin: 20px 0 5px 0; line-height: 1; color: #000; }
+      
+      /* Accent Drug Block */
+      .rx-drug-block { border-left: 5px solid #0284c7; padding-left: 16px; margin: 15px 0 25px 0; }
+      .rx-drug-name { font-size: 16pt; font-weight: bold; color: #000; }
+      .rx-drug-inst { font-size: 11pt; color: #333; margin-top: 4px; font-style: italic; }
+      .rx-duration { font-size: 11pt; font-weight: bold; margin-top: 6px; color: #0f172a; }
+
+      /* Amber Follow-up Box */
+      .print-followup { 
+        background: #fffbeb !important; border: 1px solid #fde68a; color: #92400e; 
+        padding: 12px 15px; border-radius: 8px; margin-top: 30px; font-weight: bold; 
+        -webkit-print-color-adjust: exact; 
+      }
+      
+      /* Right-aligned Hairline Signature */
+      .print-signature { 
+        border-top: 1px solid #cbd5e1; margin-top: 40px; padding-top: 15px; text-align: right; 
+      }
+      .sig-name { font-size: 13pt; font-weight: bold; color: #0f172a; }
+      .sig-creds { font-size: 9pt; color: #64748b; margin-top: 2px; }
     }
   </style>
 </head>
@@ -210,49 +213,18 @@
     <h2>Hypothyroid OPD</h2>
 
     <div class="quick-entry-section">
-      <div class="quick-entry-header">
-        <h3>⚡ Quick Entry</h3>
-        <button class="legend-toggle" onclick="toggleLegend()">📖 Show Legend</button>
-      </div>
-
       <div class="quick-input-row">
         <input type="text" id="quick-entry"
-          placeholder="e.g.  Ramila 45 f hypo 100 2.5 100 3m   or   Suresh 60 m hypo 100 4.8/2.1 125 3m pc">
+          placeholder="e.g. Suresh 60 m hypo 100 4.8 125 3m pc 130/80 72 65k">
         <button class="btn-parse" onclick="parseQuickEntry()">→ Fill</button>
       </div>
-     <div id="quick-error"></div>
-     <div id="token-hints"></div>
-
-      <div id="legend-box">
-        <div class="legend-title">Shorthand Reference</div>
-        <div class="legend-grid">
-          <div>
-            <div class="legend-row"><span class="legend-key">Name Age Gender</span><span class="legend-sep">—</span> e.g. Ramila 45 f</div>
-            <div class="legend-row"><span class="legend-key">4moa</span><span class="legend-sep">—</span> Months of amenorrhoea (females, optional)</div>
-            <div class="legend-row"><span class="legend-key">hypo / hyper</span><span class="legend-sep">—</span> Diagnosis</div>
-            <div class="legend-row"><span class="legend-key">new</span><span class="legend-sep">—</span> Newly diagnosed (no prior dose)</div>
-            <div class="legend-row"><span class="legend-key">100</span><span class="legend-sep">—</span> Current dose in µg (skip if new)</div>
-          </div>
-          <div>
-            <div class="legend-row"><span class="legend-key">2.5</span><span class="legend-sep">—</span> TSH only</div>
-            <div class="legend-row"><span class="legend-key">2.5/1.2</span><span class="legend-sep">—</span> TSH / FT4</div>
-            <div class="legend-row"><span class="legend-key">2.5/1.8/1.2</span><span class="legend-sep">—</span> TSH / FT3 / FT4</div>
-            <div class="legend-row"><span class="legend-key">100</span><span class="legend-sep">—</span> New/advised dose in µg</div>
-            <div class="legend-row"><span class="legend-key">carbi / ptu</span><span class="legend-sep">—</span> Drug name (hyper only)</div>
-            <div class="legend-row"><span class="legend-key">3m / 2w</span><span class="legend-sep">—</span> Duration (months / weeks)</div>
-            <div class="legend-row"><span class="legend-key">pc</span><span class="legend-sep">—</span> Poor compliance</div>
-          </div>
-        </div>
-        <div style="margin-top: 10px; color: #64748b; font-size: 0.78rem;">
-          Examples:<br>
-          <span style="font-family: monospace; color: #0369a1;">Ramila 45 f hypo 100 2.5 100 3m</span><br>
-          <span style="font-family: monospace; color: #0369a1;">Suresh 60 m hypo 100 4.8/2.1 125 3m pc</span><br>
-          <span style="font-family: monospace; color: #0369a1;">Priya 32 f 4moa hypo new 8.5 50 1m</span><br>
-          <span style="font-family: monospace; color: #0369a1;">Kiran 28 m hyper 20 0.01/2.8 10 carbi 6w</span>
-        </div>
-      </div>
+      <div id="quick-error"></div>
+      <div id="token-hints"></div>
+      
+      <a href="#" class="toggle-fields" id="toggle-demographics-btn" onclick="toggleDemographics(event)">▼ Show manual fields</a>
     </div>
-    <div class="section">
+
+    <div class="section" id="demographics-section" style="display: none;">
       <div style="display: grid; grid-template-columns: 130px 70px 100px 1fr; gap: 15px; margin-bottom: 15px;">
         <div class="input-group"><label>Date</label><input type="date" id="pt-date" onchange="generateNote()"></div>
         <div class="input-group"><label>Age</label><input type="number" id="pt-age" oninput="generateNote()"></div>
@@ -327,22 +299,25 @@
 </div>
 
 <div id="print-area">
-  <div class="print-header-line">
-    <div class="ph-left"><span class="ph-label">Patient Name:</span> <span class="ph-val" id="pr-name"></span></div>
-    <div class="ph-center"><span class="ph-label">Age/Sex:</span> <span class="ph-val" id="pr-age-sex"></span></div>
-    <div class="ph-right"><span class="ph-label">Date:</span> <span class="ph-val" id="pr-date"></span></div>
+  <div class="print-patient-band">
+    <div><span class="p-field">Name:</span><span class="p-val" id="pr-name"></span></div>
+    <div><span class="p-field">Age/Sex:</span><span class="p-val" id="pr-age-sex"></span></div>
+    <div><span class="p-field">Date:</span><span class="p-val" id="pr-date"></span></div>
   </div>
-  <div class="print-vitals-line">
-    <div class="pv-item"><span class="pv-label">Weight</span> <span class="pv-val" id="pr-wt"></span></div>
-    <div class="pv-item"><span class="pv-label">BP</span> <span class="pv-val" id="pr-bp"></span></div>
-    <div class="pv-item"><span class="pv-label">HR</span> <span class="pv-val" id="pr-hr"></span></div>
-    <div class="pv-item pv-tsh"><span class="pv-label">S. TSH</span> <span class="pv-val" id="pr-tsh"></span></div>
+
+  <div class="print-vitals-row">
+    <div class="v-card"><span class="v-label">Weight</span><span class="v-val" id="pr-wt"></span></div>
+    <div class="v-card"><span class="v-label">BP</span><span class="v-val" id="pr-bp"></span></div>
+    <div class="v-card"><span class="v-label">Heart Rate</span><span class="v-val" id="pr-hr"></span></div>
+    <div class="v-card tsh-card"><span class="v-label">S. TSH</span><span class="v-val" id="pr-tsh"></span></div>
   </div>
+
   <div class="print-rx-body">
-    <div class="rx-logo">℞</div>
-    <div class="rx-content" id="pr-note"></div>
+    <div id="pr-note-content"></div> 
   </div>
+
   <div class="print-followup"><b>Advised Follow-up:</b> <span id="pr-fu"></span></div>
+  
   <div class="print-signature">
     <div class="sig-name">Dr. Mit Panchani</div>
     <div class="sig-creds">MBBS, MD General Medicine<br>Fellow in 2D Echo, PGCIH</div>
@@ -361,35 +336,51 @@
   }
 
   // ==========================================
-  // LOCK SCREEN
-    // ==========================================
-  
-let pinBuffer = "";
-const lockScreen = document.getElementById('auth-screen');
-const lockBox = document.getElementById('mac-lock-box');
-
-document.addEventListener('keyup', function(e) {
-  if (lockScreen.classList.contains('unlock-fade')) return;
-  if (!isNaN(e.key) && e.key.trim() !== "") {
-    pinBuffer += e.key;
-    if (pinBuffer.length === 4) {
-      if (pinBuffer === "3342") {
-        lockBox.classList.add('unlock-scale');
-        lockScreen.classList.add('unlock-fade');
-        setTimeout(() => {
-          lockScreen.style.display = 'none';
-          document.body.style.overflow = 'auto';
-          pinBuffer = "";
-        }, 500);
-      } else {
-        lockBox.classList.remove('shake');
-        void lockBox.offsetWidth;
-        lockBox.classList.add('shake');
-        pinBuffer = "";
-      }
+  // TOGGLE DEMOGRAPHICS
+  // ==========================================
+  function toggleDemographics(e) {
+    if (e) e.preventDefault();
+    const sec = document.getElementById('demographics-section');
+    const btn = document.getElementById('toggle-demographics-btn');
+    if (sec.style.display === 'none') {
+      sec.style.display = 'block';
+      btn.textContent = '▲ Hide manual fields';
+    } else {
+      sec.style.display = 'none';
+      btn.textContent = '▼ Show manual fields';
     }
-  } else if (e.key === 'Backspace') pinBuffer = pinBuffer.slice(0, -1);
-});
+  }
+
+  // ==========================================
+  // LOCK SCREEN
+  // ==========================================
+  let pinBuffer = "";
+  const lockScreen = document.getElementById('auth-screen');
+  const lockBox = document.getElementById('mac-lock-box');
+
+  document.addEventListener('keyup', function(e) {
+    if (lockScreen.classList.contains('unlock-fade')) return;
+    if (!isNaN(e.key) && e.key.trim() !== "") {
+      pinBuffer += e.key;
+      if (pinBuffer.length === 4) {
+        if (pinBuffer === "3342") {
+          lockBox.classList.add('unlock-scale');
+          lockScreen.classList.add('unlock-fade');
+          setTimeout(() => {
+            lockScreen.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            pinBuffer = "";
+          }, 500);
+        } else {
+          lockBox.classList.remove('shake');
+          void lockBox.offsetWidth;
+          lockBox.classList.add('shake');
+          pinBuffer = "";
+        }
+      }
+    } else if (e.key === 'Backspace') pinBuffer = pinBuffer.slice(0, -1);
+  });
+
   // ==========================================
   // BP AUTO-FORMATTER
   // ==========================================
@@ -399,16 +390,6 @@ document.addEventListener('keyup', function(e) {
     if (v.length === 3 && !v.includes('/')) { this.value = v + '/'; }
     generateNote();
   });
-
-  // ==========================================
-  // LEGEND TOGGLE
-  // ==========================================
-  function toggleLegend() {
-    const box = document.getElementById('legend-box');
-    const btn = document.querySelector('.legend-toggle');
-    box.classList.toggle('open');
-    btn.textContent = box.classList.contains('open') ? '📖 Hide Legend' : '📖 Show Legend';
-  }
 
   // ==========================================
   // QUICK ENTRY PARSER
@@ -423,10 +404,9 @@ document.addEventListener('keyup', function(e) {
     const tokens = raw.toLowerCase().split(/\s+/);
     let i = 0;
 
-    // --- NAME: collect words until we hit a number ---
+    // --- NAME ---
     let nameParts = [];
     while (i < tokens.length && isNaN(parseFloat(tokens[i]))) {
-      // stop collecting name once we hit hypo/hyper/new/pc/moa.../carbi/ptu
       if (['hypo','hyper','new','pc','carbi','ptu'].includes(tokens[i])) break;
       if (/^\d+moa$/.test(tokens[i])) break;
       nameParts.push(tokens[i]);
@@ -445,7 +425,7 @@ document.addEventListener('keyup', function(e) {
       i++;
     }
 
-    // --- MOA (optional, females only) ---
+    // --- MOA ---
     let moa = '';
     if (i < tokens.length && /^\d+moa$/.test(tokens[i])) {
       moa = tokens[i].replace('moa', '');
@@ -468,13 +448,13 @@ document.addEventListener('keyup', function(e) {
       else if (/^\d+(\.\d+)?$/.test(tokens[i])) { currentDose = tokens[i]; i++; }
     }
 
-    // --- LABS: TSH only, TSH/FT4, or TSH/FT3/FT4 ---
+    // --- LABS ---
     let tsh = '', ft3 = '', ft4 = '';
     if (i < tokens.length && /^[\d.]+([/][\d.]+)*$/.test(tokens[i])) {
       const parts = tokens[i].split('/');
       tsh  = parts[0] || '';
-      if (parts.length === 2) { ft4  = parts[1]; }         // two values = TSH + FT4
-      if (parts.length === 3) { ft3  = parts[1]; ft4 = parts[2]; } // three = TSH + FT3 + FT4
+      if (parts.length === 2) { ft4  = parts[1]; }
+      if (parts.length === 3) { ft3  = parts[1]; ft4 = parts[2]; }
       i++;
     }
 
@@ -482,7 +462,7 @@ document.addEventListener('keyup', function(e) {
     let newDose = '';
     if (i < tokens.length && /^\d+(\.\d+)?$/.test(tokens[i])) { newDose = tokens[i]; i++; }
 
-    // --- DRUG NAME (hyper only: carbi / ptu) ---
+    // --- DRUG NAME ---
     let drug = '';
     if (i < tokens.length && (tokens[i] === 'carbi' || tokens[i] === 'ptu')) {
       drug = tokens[i] === 'carbi' ? 'Carbimazole' : 'PTU';
@@ -504,19 +484,30 @@ document.addEventListener('keyup', function(e) {
     let poorCompliance = false;
     if (i < tokens.length && tokens[i] === 'pc') { poorCompliance = true; i++; }
 
+    // --- BLOOD PRESSURE ---
+    let bp = '';
+    if (i < tokens.length && /^\d{2,3}\/\d{2,3}$/.test(tokens[i])) { bp = tokens[i]; i++; }
+
+    // --- HEART RATE ---
+    let hr = '';
+    if (i < tokens.length && /^\d{2,3}$/.test(tokens[i])) { hr = tokens[i]; i++; }
+
+    // --- WEIGHT ---
+    let wt = '';
+    if (i < tokens.length && /^\d+(\.\d+)?k$/.test(tokens[i])) { 
+      wt = tokens[i].replace('kg', ''); 
+      i++; 
+    }
+
     // ---- POPULATE FORM FIELDS ----
-    if (name) { document.getElementById('pt-name').value = name.toUpperCase(); }
-    if (age)  { document.getElementById('pt-age').value = age; }
+    if (name) document.getElementById('pt-name').value = name.toUpperCase();
+    if (age)  document.getElementById('pt-age').value = age;
     document.getElementById('pt-gender').value = gender;
     document.getElementById('pt-moa').value = moa;
 
-    // Diagnosis
     let dxVal = '';
-    if (condition === 'hypo') {
-      dxVal = isNew ? 'Newly Diagnosed Hypothyroid' : 'K/C/O Hypothyroid';
-    } else {
-      dxVal = isNew ? 'Newly Diagnosed Hyperthyroid' : 'K/C/O Hyperthyroid';
-    }
+    if (condition === 'hypo') dxVal = isNew ? 'Newly Diagnosed Hypothyroid' : 'K/C/O Hypothyroid';
+    else dxVal = isNew ? 'Newly Diagnosed Hyperthyroid' : 'K/C/O Hyperthyroid';
     document.getElementById('pt-dx').value = dxVal;
 
     document.getElementById('pt-dose').value = currentDose ? currentDose + ' µg' : '';
@@ -525,24 +516,18 @@ document.addEventListener('keyup', function(e) {
     document.getElementById('rx-drug').value = drug;
     document.getElementById('rx-duration').value = durationText;
     document.getElementById('comp-poor').checked = poorCompliance;
-    if (poorCompliance) {
-      document.getElementById('compliance-box').classList.add('active');
-    } else {
-      document.getElementById('compliance-box').classList.remove('active');
-    }
+    if (poorCompliance) document.getElementById('compliance-box').classList.add('active');
+    else document.getElementById('compliance-box').classList.remove('active');
 
-    // Follow-up
+    // Populate new vital fields (will automatically reflect in print area)
+    document.getElementById('pt-bp').value = bp;
+    document.getElementById('pt-hr').value = hr;
+    document.getElementById('pt-wt').value = wt;
+
     let fuText = '';
-    if (durationText) {
-      if (condition === 'hypo') {
-        fuText = `After ${durationText} with S. TSH`;
-      } else {
-        fuText = `After ${durationText} with S. TSH + FT4`;
-      }
-    }
+    if (durationText) fuText = `After ${durationText} with S. TSH${condition === 'hyper' ? ' + FT4' : ''}`;
     document.getElementById('rx-fu').value = fuText;
 
-    // ---- BUILD NOTE ----
     let note = buildNote({ condition, isNew, currentDose, tsh, ft3, ft4, newDose, drug, durationText, poorCompliance, moa, gender });
     document.getElementById('note-box').value = note;
     saveFormData();
@@ -561,57 +546,41 @@ document.addEventListener('keyup', function(e) {
     let note = '';
     const isHypo = condition === 'hypo';
 
-    // --- DIAGNOSIS LINE ---
     if (isNew) {
       note += isHypo ? 'NEWLY DIAGNOSED HYPOTHYROIDISM' : 'NEWLY DIAGNOSED HYPERTHYROIDISM';
     } else {
-      if (isHypo) {
-        note += `K/C/O HYPOTHYROIDISM ON TAB. THYROXINE ${currentDose ? currentDose + ' µg' : '____ µg'}`;
-      } else {
+      if (isHypo) note += `K/C/O HYPOTHYROIDISM ON TAB. THYROXINE ${currentDose ? currentDose + ' µg' : '____ µg'}`;
+      else {
         let drugLine = drug ? `TAB. ${drug.toUpperCase()}` : 'ANTI-THYROID MEDICATION';
         note += `K/C/O HYPERTHYROIDISM ON ${drugLine}${currentDose ? ' ' + currentDose + ' mg' : ''}`;
       }
     }
 
-    // --- MOA (females only) ---
-    if (moa && gender === 'Female') {
-      note += `\n* MOA: ${moa} MONTH${parseInt(moa) > 1 ? 'S' : ''} OF AMENORRHOEA`;
-    }
-
+    if (moa && gender === 'Female') note += `\n* MOA: ${moa} MONTH${parseInt(moa) > 1 ? 'S' : ''} OF AMENORRHOEA`;
     note += '\n\n';
 
-    // --- LABS ---
     if (tsh) {
       note += `S. TSH: ${tsh} µIU/mL`;
-      if (ft3 && ft4) {
-        note += `    |    FT3: ${ft3}    |    FT4: ${ft4}`;
-      } else if (ft4) {
-        note += `    |    FT4: ${ft4}`;
-      }
+      if (ft3 && ft4) note += `    |    FT3: ${ft3}    |    FT4: ${ft4}`;
+      else if (ft4) note += `    |    FT4: ${ft4}`;
       note += '\n';
     }
 
-    // --- COMPLIANCE ---
     if (poorCompliance) {
       note += `\nPOOR COMPLIANCE NOTED.\nCounselled patient regarding strict empty stomach morning dosing\nand avoiding food/tea for 45 minutes after tablet.\n`;
     }
 
-    // --- DIETARY ADVICE (hypo only) ---
     if (isHypo) {
       note += `\nDIETARY ADVICE:\n- Use iodised salt (Tata, Nirma, etc.); avoid sindha namak (non-iodised)\n- Avoid cabbage / cauliflower (કોબી / ફૂલાવર)\n`;
     }
 
-    // --- PRESCRIPTION ---
     note += `\nADV:`;
-    if (isHypo) {
-      note += `\n- TAB. THYROXINE ${newDose ? newDose + ' µg' : '____ µg'} OD EMPTY STOMACH (MORNING)`;
-    } else {
+    if (isHypo) note += `\n- TAB. THYROXINE ${newDose ? newDose + ' µg' : '____ µg'} OD EMPTY STOMACH (MORNING)`;
+    else {
       let rxDrug = drug ? drug.toUpperCase() : '___________';
       note += `\n- TAB. ${rxDrug} ${newDose ? newDose + ' mg' : '____ mg'} OD`;
     }
-    if (durationText) {
-      note += `\n  FOR ${durationText.toUpperCase()}`;
-    }
+    if (durationText) note += `\n  FOR ${durationText.toUpperCase()}`;
 
     return note;
   }
@@ -636,40 +605,27 @@ document.addEventListener('keyup', function(e) {
 
     let note = '';
 
-    // Diagnosis line
-    if (isNew) {
-      note += dx.toUpperCase();
-    } else {
-      if (isHypo) {
-        note += `K/C/O HYPOTHYROIDISM ON TAB. THYROXINE ${dose ? dose.toUpperCase() : '____ µg'}`;
-      } else {
-        note += `K/C/O HYPERTHYROIDISM${drug ? ' ON TAB. ' + drug.toUpperCase() : ''}${dose ? ' ' + dose : ''}`;
-      }
+    if (isNew) note += dx.toUpperCase();
+    else {
+      if (isHypo) note += `K/C/O HYPOTHYROIDISM ON TAB. THYROXINE ${dose ? dose.toUpperCase() : '____ µg'}`;
+      else note += `K/C/O HYPERTHYROIDISM${drug ? ' ON TAB. ' + drug.toUpperCase() : ''}${dose ? ' ' + dose : ''}`;
     }
 
-    if (moa && gender === 'Female') {
-      note += `\n* MOA: ${moa} MONTH${parseInt(moa) > 1 ? 'S' : ''} OF AMENORRHOEA`;
-    }
+    if (moa && gender === 'Female') note += `\n* MOA: ${moa} MONTH${parseInt(moa) > 1 ? 'S' : ''} OF AMENORRHOEA`;
     note += '\n\n';
 
-    if (labs) { note += `${labs}\n`; }
+    if (labs) note += `${labs}\n`;
 
-    if (compPoor) {
-      note += `\nPOOR COMPLIANCE NOTED.\nCounselled patient regarding strict empty stomach morning dosing\nand avoiding food/tea for 45 minutes after tablet.\n`;
-    }
+    if (compPoor) note += `\nPOOR COMPLIANCE NOTED.\nCounselled patient regarding strict empty stomach morning dosing\nand avoiding food/tea for 45 minutes after tablet.\n`;
 
-    if (isHypo) {
-      note += `\nDIETARY ADVICE:\n- Use iodised salt (Tata, Nirma, etc.); avoid sindha namak (non-iodised)\n- Avoid cabbage / cauliflower (કોબી / ફૂલાવર)\n`;
-    }
+    if (isHypo) note += `\nDIETARY ADVICE:\n- Use iodised salt (Tata, Nirma, etc.); avoid sindha namak (non-iodised)\n- Avoid cabbage / cauliflower (કોબી / ફૂલાવર)\n`;
 
     note += `\nADV:`;
-    if (isHypo) {
-      note += `\n- TAB. THYROXINE ${manualRx || '____ µg'} OD EMPTY STOMACH (MORNING)`;
-    } else {
-      note += `\n- TAB. ${drug ? drug.toUpperCase() : '___________'} ${manualRx || '____ mg'} OD`;
-    }
-    if (duration) { note += `\n  FOR ${duration.toUpperCase()}`; }
-    if (fu) { note += `\n\nFOLLOW UP: ${fu}`; }
+    if (isHypo) note += `\n- TAB. THYROXINE ${manualRx || '____ µg'} OD EMPTY STOMACH (MORNING)`;
+    else note += `\n- TAB. ${drug ? drug.toUpperCase() : '___________'} ${manualRx || '____ mg'} OD`;
+    
+    if (duration) note += `\n  FOR ${duration.toUpperCase()}`;
+    if (fu) note += `\n\nFOLLOW UP: ${fu}`;
 
     document.getElementById('note-box').value = note;
     saveFormData();
@@ -725,9 +681,7 @@ document.addEventListener('keyup', function(e) {
       if (data.customNote) {
         document.getElementById('note-box').value = data.customNote;
         autoResizeText();
-      } else {
-        generateNote();
-      }
+      } else generateNote();
     } else {
       document.getElementById('pt-date').valueAsDate = new Date();
       generateNote();
@@ -763,7 +717,7 @@ document.addEventListener('keyup', function(e) {
   window.onload = loadFormData;
 
   // ==========================================
-  // PRINT & COPY
+  // PRINT PREPARATION & STRUCTURED PARSING
   // ==========================================
   function copyNote() {
     navigator.clipboard.writeText(document.getElementById('note-box').value).then(() => {
@@ -774,20 +728,23 @@ document.addEventListener('keyup', function(e) {
   }
 
   function preparePrint() {
+    // Top Demographics Band
     document.getElementById('pr-name').innerText = document.getElementById('pt-name').value || "........................";
     let age = document.getElementById('pt-age').value;
     let gender = document.getElementById('pt-gender').value.charAt(0);
     let moa = document.getElementById('pt-moa').value;
     let ageSexStr = age ? `${age} Yrs / ${gender}` : `..... Yrs / ${gender}`;
-    if (moa) ageSexStr += ` (MOA: ${moa}m)`;
     document.getElementById('pr-age-sex').innerText = ageSexStr;
+    
     let d = document.getElementById('pt-date').value;
     document.getElementById('pr-date').innerText = d ? new Date(d).toLocaleDateString('en-GB') : "..../..../......";
+    
+    // Vitals Cards
     document.getElementById('pr-wt').innerText = document.getElementById('pt-wt').value ? document.getElementById('pt-wt').value + " kg" : "____ kg";
     document.getElementById('pr-bp').innerText = document.getElementById('pt-bp').value ? document.getElementById('pt-bp').value + " mmHg" : "____ mmHg";
     document.getElementById('pr-hr').innerText = document.getElementById('pt-hr').value ? document.getElementById('pt-hr').value + " /min" : "____ /min";
 
-    // TSH from labs field
+    // Extract TSH for the specific vitals card
     let labsVal = document.getElementById('pt-labs').value;
     let tshDisplay = '____';
     if (labsVal) {
@@ -796,107 +753,130 @@ document.addEventListener('keyup', function(e) {
     }
     document.getElementById('pr-tsh').innerText = tshDisplay;
 
-    let noteText = document.getElementById('note-box').value
-      .replace(/DIETARY ADVICE:/g, "<br><b>DIETARY ADVICE:</b>")
-      .replace(/ADV:/g, "<br><b>ADV:</b>")
-      .replace(/TAB\. THYROXINE/g, "<b>TAB. THYROXINE</b>")
-      .replace(/TAB\. CARBIMAZOLE/g, "<b>TAB. CARBIMAZOLE</b>")
-      .replace(/TAB\. PTU/g, "<b>TAB. PTU</b>")
-      .replace(/\n/g, "<br>");
-    document.getElementById('pr-note').innerHTML = noteText;
+    // Build the Structured Print Layout DOM completely dynamically based on fields
+    const dx = document.getElementById('pt-dx').value;
+    const isHypo = !dx.toLowerCase().includes('hyper');
+    const isNew = dx.toLowerCase().includes('newly');
+    const dose = document.getElementById('pt-dose').value;
+    const rxDose = document.getElementById('rx-dose').value;
+    const drug = document.getElementById('rx-drug').value;
+    const duration = document.getElementById('rx-duration').value;
+    const compPoor = document.getElementById('comp-poor').checked;
+
+    let html = '';
+
+    // 1. Diagnosis (Now smaller & at the very top)
+    let dxText = isNew ? dx.toUpperCase() : (isHypo ? `K/C/O HYPOTHYROIDISM ON TAB. THYROXINE ${dose ? dose : '____'}` : `K/C/O HYPERTHYROIDISM ${drug ? 'ON TAB. ' + drug.toUpperCase() : ''} ${dose ? dose : ''}`);
+    if (moa && gender === 'F') dxText += ` (MOA: ${moa} MONTHS)`;
+    html += `<div class="rx-dx-block">${dxText}</div>`;
+
+    // 2. Extra Labs (FT3/FT4)
+    if (labsVal && (labsVal.includes('FT3') || labsVal.includes('FT4'))) {
+      html += `<div class="rx-labs">Labs: ${labsVal}</div>`;
+    }
+
+    // 3. Compliance Alert (Above Rx)
+    if (compPoor) {
+      html += `<div class="rx-alert"><b>POOR COMPLIANCE NOTED:</b> Counselled for strict empty stomach morning dosing and avoiding food/tea for 45 mins.</div>`;
+    }
+
+    // 4. Dietary Advice (Above Rx)
+    if (isHypo) {
+      html += `<div class="rx-diet"><b>DIETARY ADVICE:</b><br>• Use iodised salt (Tata, Nirma, etc.); avoid sindha namak (non-iodised).<br>• Avoid cabbage / cauliflower (કોબી / ફૂલાવર).</div>`;
+    }
+
+    // 5. ℞ SYMBOL INJECTED HERE
+    html += `<div class="rx-symbol">℞</div>`;
+
+    // 6. Prescribed Medication Block (Just below ℞)
+    let rxName = isHypo ? 'TAB. THYROXINE' : `TAB. ${drug ? drug.toUpperCase() : '___________'}`;
+    let rxInst = isHypo ? 'OD EMPTY STOMACH (MORNING)' : 'OD';
+    html += `<div class="rx-drug-block">
+               <div class="rx-drug-name">${rxName} ${rxDose || '____'}</div>
+               <div class="rx-drug-inst">Take 1 tablet daily (${rxInst})</div>
+               ${duration ? `<div class="rx-duration">Dispense for: ${duration.toUpperCase()}</div>` : ''}
+             </div>`;
+
+    // Inject the structured DOM
+    document.getElementById('pr-note-content').innerHTML = html;
+
+    // Follow-up Text Box
     document.getElementById('pr-fu').innerText = document.getElementById('rx-fu').value || "______________________";
+    
     window.print();
   }
 
-  // Also allow Enter key on quick entry field
-const qe = document.getElementById('quick-entry');
-qe.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') parseQuickEntry();
-});
-qe.addEventListener('keyup', updateTokenHints);
-qe.addEventListener('focus', function() {
-  document.getElementById('legend-box').classList.add('open');
-  document.querySelector('.legend-toggle').textContent = '📖 Hide Legend';
-  updateTokenHints();
-});
-qe.addEventListener('blur', function() {
-  document.getElementById('legend-box').classList.remove('open');
-  document.querySelector('.legend-toggle').textContent = '📖 Show Legend';
-});
+  // ==========================================
+  // QUICK ENTRY EVENT LISTENERS & HINTS
+  // ==========================================
+  const qe = document.getElementById('quick-entry');
+  qe.addEventListener('keydown', function(e) { if (e.key === 'Enter') parseQuickEntry(); });
+  qe.addEventListener('input', updateTokenHints);
 
-const TOKEN_SEQUENCE = [
-  { id: 'name',     label: 'Name',         hint: 'First/Last name' },
-  { id: 'age',      label: 'Age',          hint: 'e.g. 45' },
-  { id: 'gender',   label: 'm / f',        hint: 'Gender' },
-  { id: 'moa',      label: '4moa',         hint: 'optional, females' },
-  { id: 'cond',     label: 'hypo / hyper', hint: 'Condition' },
-  { id: 'cdose',    label: 'dose / new',   hint: 'Current dose µg or new' },
-  { id: 'labs',     label: 'TSH/FT4',      hint: 'e.g. 2.5 or 2.5/1.2' },
-  { id: 'newdose',  label: 'new dose',     hint: 'Advised dose µg' },
-  { id: 'drug',     label: 'carbi / ptu',  hint: 'hyper only, optional' },
-  { id: 'duration', label: '3m / 2w',      hint: 'Duration' },
-  { id: 'pc',       label: 'pc',           hint: 'optional, poor compliance' },
-];
+  const TOKEN_SEQUENCE = [
+    { id: 'name',     label: 'Name',         hint: 'First/Last name' },
+    { id: 'age',      label: 'Age',          hint: 'e.g. 45' },
+    { id: 'gender',   label: 'm / f',        hint: 'Gender' },
+    { id: 'moa',      label: '4moa',         hint: 'optional, females' },
+    { id: 'cond',     label: 'hypo / hyper', hint: 'Condition' },
+    { id: 'cdose',    label: 'dose / new',   hint: 'Current dose µg or new' },
+    { id: 'labs',     label: 'TSH/FT4',      hint: 'e.g. 2.5 or 2.5/1.2' },
+    { id: 'newdose',  label: 'new dose',     hint: 'Advised dose µg' },
+    { id: 'drug',     label: 'carbi / ptu',  hint: 'hyper only, optional' },
+    { id: 'duration', label: '3m / 2w',      hint: 'Duration' },
+    { id: 'pc',       label: 'pc',           hint: 'optional, poor compliance' },
+    { id: 'bp',       label: '120/80',       hint: 'Blood pressure (optional)' },
+    { id: 'hr',       label: '72',           hint: 'Heart rate (optional)' },
+    { id: 'wt',       label: '65k',         hint: 'Weight in kg (optional)' }
+  ];
 
-function updateTokenHints() {
-  const raw = document.getElementById('quick-entry').value;
-  const tokens = raw.trim().toLowerCase().split(/\s+/).filter(Boolean);
-  const hints = document.getElementById('token-hints');
-  if (!raw.trim()) { hints.innerHTML = ''; return; }
+  function updateTokenHints() {
+    const raw = document.getElementById('quick-entry').value;
+    const tokens = raw.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const hints = document.getElementById('token-hints');
+    if (!raw.trim()) { hints.innerHTML = ''; return; }
 
-  // figure out how many tokens are "done"
-  let done = 0;
-  let i = 0;
-  let seq = 0; // position in TOKEN_SEQUENCE
+    let done = 0; let i = 0;
+    let foundTokens = new Set();
+    let nameWords = 0;
 
-  // name: words until a number or keyword
-  let nameWords = 0;
-  while (i < tokens.length) {
-    const t = tokens[i];
-    if (!isNaN(parseFloat(t)) || ['hypo','hyper','new','pc','carbi','ptu'].includes(t) || /^\d+moa$/.test(t)) break;
-    nameWords++; i++;
-  }
-  if (nameWords > 0) done = Math.max(done, 1); // name done
-  seq = 1;
-
-  if (i < tokens.length && /^\d+$/.test(tokens[i])) { i++; done = Math.max(done, 2); } // age
-  seq = 2;
-  if (i < tokens.length && (tokens[i] === 'm' || tokens[i] === 'f')) { i++; done = Math.max(done, 3); } // gender
-  seq = 3;
-  if (i < tokens.length && /^\d+moa$/.test(tokens[i])) { i++; done = Math.max(done, 4); } // moa
-  seq = 4;
-  if (i < tokens.length && (tokens[i] === 'hypo' || tokens[i] === 'hyper')) { i++; done = Math.max(done, 5); } // cond
-  seq = 5;
-  if (i < tokens.length && (/^\d+(\.\d+)?$/.test(tokens[i]) || tokens[i] === 'new')) { i++; done = Math.max(done, 6); } // cdose
-  seq = 6;
-  if (i < tokens.length && /^[\d.]+([/][\d.]+)*$/.test(tokens[i])) { i++; done = Math.max(done, 7); } // labs
-  seq = 7;
-  if (i < tokens.length && /^\d+(\.\d+)?$/.test(tokens[i])) { i++; done = Math.max(done, 8); } // newdose
-  seq = 8;
-  if (i < tokens.length && (tokens[i] === 'carbi' || tokens[i] === 'ptu')) { i++; done = Math.max(done, 9); } // drug
-  seq = 9;
-  if (i < tokens.length && /^\d+(m|w)$/.test(tokens[i])) { i++; done = Math.max(done, 10); } // duration
-  seq = 10;
-  if (i < tokens.length && tokens[i] === 'pc') { done = Math.max(done, 11); } // pc
-
-  // render chips
-  hints.innerHTML = TOKEN_SEQUENCE.map((tok, idx) => {
-    const pos = idx + 1;
-    // skip optional tokens that weren't used and we're past them
-    const isOptional = ['moa','drug','pc'].includes(tok.id);
-    if (pos < done && isOptional && !(
-      (tok.id === 'moa' && /\d+moa/.test(raw.toLowerCase())) ||
-      (tok.id === 'drug' && (raw.toLowerCase().includes('carbi') || raw.toLowerCase().includes('ptu'))) ||
-      (tok.id === 'pc' && raw.toLowerCase().includes(' pc'))
-    )) {
-      return `<span class="th-chip th-skip" title="${tok.hint}">${tok.label} (opt)</span>`;
+    while (i < tokens.length) {
+      const t = tokens[i];
+      if (!isNaN(parseFloat(t)) || ['hypo','hyper','new','pc','carbi','ptu'].includes(t) || /^\d+moa$/.test(t)) break;
+      nameWords++; i++;
     }
-    if (pos <= done)      return `<span class="th-chip th-done"  title="${tok.hint}">✓ ${tok.label}</span>`;
-    if (pos === done + 1) return `<span class="th-chip th-next"  title="${tok.hint}">→ ${tok.label}</span>`;
-                          return `<span class="th-chip th-future" title="${tok.hint}">${tok.label}</span>`;
-  }).join('');
-}
+    if (nameWords > 0) done = Math.max(done, 1); 
 
+    if (i < tokens.length && /^\d+$/.test(tokens[i])) { i++; done = Math.max(done, 2); }
+    if (i < tokens.length && (tokens[i] === 'm' || tokens[i] === 'f')) { i++; done = Math.max(done, 3); }
+    if (i < tokens.length && /^\d+moa$/.test(tokens[i])) { i++; done = Math.max(done, 4); foundTokens.add('moa'); }
+    if (i < tokens.length && (tokens[i] === 'hypo' || tokens[i] === 'hyper')) { i++; done = Math.max(done, 5); }
+    if (i < tokens.length && (/^\d+(\.\d+)?$/.test(tokens[i]) || tokens[i] === 'new')) { i++; done = Math.max(done, 6); }
+    if (i < tokens.length && /^[\d.]+([/][\d.]+)*$/.test(tokens[i])) { i++; done = Math.max(done, 7); }
+    if (i < tokens.length && /^\d+(\.\d+)?$/.test(tokens[i])) { i++; done = Math.max(done, 8); }
+    if (i < tokens.length && (tokens[i] === 'carbi' || tokens[i] === 'ptu')) { i++; done = Math.max(done, 9); foundTokens.add('drug'); }
+    if (i < tokens.length && /^\d+(m|w)$/.test(tokens[i])) { i++; done = Math.max(done, 10); }
+    if (i < tokens.length && tokens[i] === 'pc') { i++; done = Math.max(done, 11); foundTokens.add('pc'); }
+    
+    // Check new optional tokens using Set to track explicitly found ones
+    if (i < tokens.length && /^\d{2,3}\/\d{2,3}$/.test(tokens[i])) { i++; done = Math.max(done, 12); foundTokens.add('bp'); }
+    if (i < tokens.length && /^\d{2,3}$/.test(tokens[i])) { i++; done = Math.max(done, 13); foundTokens.add('hr'); }
+    if (i < tokens.length && /^\d+(\.\d+)?k$/.test(tokens[i])) { i++; done = Math.max(done, 14); foundTokens.add('wt'); }
+
+    hints.innerHTML = TOKEN_SEQUENCE.map((tok, idx) => {
+      const pos = idx + 1;
+      const isOptional = ['moa','drug','pc','bp','hr','wt'].includes(tok.id);
+      
+      // If we've passed this token's position but didn't find it in the Set, explicitly strike it out as skipped
+      if (pos < done && isOptional && !foundTokens.has(tok.id)) {
+        return `<span class="th-chip th-skip" title="${tok.hint}">${tok.label} (skipped)</span>`;
+      }
+      
+      if (pos <= done)      return `<span class="th-chip th-done"  title="${tok.hint}">✓ ${tok.label}</span>`;
+      if (pos === done + 1) return `<span class="th-chip th-next"  title="${tok.hint}">→ ${tok.label}</span>`;
+                            return `<span class="th-chip th-future" title="${tok.hint}">${tok.label}</span>`;
+    }).join('');
+  }
 </script>
 </body>
 </html>
