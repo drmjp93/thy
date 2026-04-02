@@ -135,17 +135,18 @@
     #print-area { display: none; }
     
   @media print {
-        @page { size: A4; margin: 5mm; }
-        body { background: white; overflow-y: visible; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        #screen-layout { display: none !important; }
-        #lock-screen   { display: none !important; }
-        #print-layout  {
-            display: block !important; width: 100%; color: black;
-            font-family: 'Inter', sans-serif;
-            padding-top: 35mm !important;
-            padding-left: 12mm !important;
-            padding-right: 10mm !important;
-        }
+
+
+      @page { size: A4; margin: 30mm 15mm 15mm 15mm; }
+
+
+      body { background: white !important; padding: 0 !important; margin: 0 !important; font-family: "Segoe UI", Arial, sans-serif; color: #000; }
+
+
+      #auth-screen, .main-wrapper { display: none !important; }
+
+
+      #print-area { display: block !important; width: 100%; box-sizing: border-box; }
     }
       
       /* Clean Patient Strip */
