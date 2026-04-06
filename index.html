@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Hypothyroid Clinic</title>
+  <title>Hypothyroid</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22black%22/><text y=%22.9em%22 font-size=%2290%22 fill=%22white%22 font-family=%22Arial, sans-serif%22 font-weight=%22bold%22 x=%2250%%22 text-anchor=%22middle%22>T</text></svg>">
   <style>
     :root { --bg: #f8fafc; --border: #cbd5e1; --accent: #0284c7; --pill-bg: #e0f2fe; --pill-text: #0369a1; }
@@ -300,9 +300,12 @@
     <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 10px;">Fully editable. Paste to EMR or Print.</p>
     <textarea id="note-box" oninput="saveFormData(); autoResizeText();"></textarea>    
     <div style="display: flex; flex-direction: column;">
-      <button class="btn-copy" onclick="copyNote()" id="copy-btn">📋 Copy Note</button>
-      <button class="btn-print" onclick="preparePrint()">🖨️ Print Prescription</button>
+   
       <button class="btn-clear" onclick="clearPatient()">🗑️ Clear for Next Patient</button>
+      <button class="btn-print" onclick="preparePrint()">🖨️ Print Prescription</button>
+
+     <button class="btn-copy hidden" onclick="copyNote()" id="copy-btn">📋 Copy Note</button>
+      
     </div>
   </div>
 </div>
