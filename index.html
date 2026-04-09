@@ -750,24 +750,24 @@ function generateNote() {
     });
   }
 
-  function preparePrint() {
-    // Top Demographics Band
+ function preparePrint() {
+    // 1. TOP DEMOGRAPHICS BAND
     document.getElementById('pr-name').innerText = document.getElementById('pt-name').value || "........................";
     let age = document.getElementById('pt-age').value;
     let gender = document.getElementById('pt-gender').value.charAt(0);
     let moa = document.getElementById('pt-moa').value;
-    let ageSexStr = age ? `${age} Yrs / ${gender}` : `..... Yrs / ${gender}`;
+    let ageSexStr = age ? `${age} YRS / ${gender}` : `..... YRS / ${gender}`;
     document.getElementById('pr-age-sex').innerText = ageSexStr;
     
     let d = document.getElementById('pt-date').value;
     document.getElementById('pr-date').innerText = d ? new Date(d).toLocaleDateString('en-GB') : "..../..../......";
     
-    // Vitals Cards
-    document.getElementById('pr-wt').innerText = document.getElementById('pt-wt').value ? document.getElementById('pt-wt').value + " kg" : "____ kg";
-    document.getElementById('pr-bp').innerText = document.getElementById('pt-bp').value ? document.getElementById('pt-bp').value + " mmHg" : "____ mmHg";
-    document.getElementById('pr-hr').innerText = document.getElementById('pt-hr').value ? document.getElementById('pt-hr').value + " /min" : "____ /min";
+    // 2. VITALS CARDS
+    document.getElementById('pr-wt').innerText = document.getElementById('pt-wt').value ? document.getElementById('pt-wt').value + " KG" : "____ KG";
+    document.getElementById('pr-bp').innerText = document.getElementById('pt-bp').value ? document.getElementById('pt-bp').value + " MMHG" : "____ MMHG";
+    document.getElementById('pr-hr').innerText = document.getElementById('pt-hr').value ? document.getElementById('pt-hr').value + "/MIN" : "____ /MIN";
 
-    // Extract TSH for the specific vitals card
+    // 3. TSH EXTRACTION
     let labsVal = document.getElementById('pt-labs').value;
     let tshDisplay = '____';
     if (labsVal) {
@@ -776,67 +776,57 @@ function generateNote() {
     }
     document.getElementById('pr-tsh').innerText = tshDisplay;
 
-    // Build the Structured Print Layout DOM completely dynamically based on fields
+    // 4. UNIT LOGIC - FORCING MCG FOR HYPO
     const dx = document.getElementById('pt-dx').value;
     const isHypo = !dx.toLowerCase().includes('hyper');
     const isNew = dx.toLowerCase().includes('newly');
-    const dose = document.getElementById('pt-dose').value;
-    const rxDose = document.getElementById('rx-dose').value;
+    
+    // STRIP ALL NON-NUMERIC CHARACTERS TO PREVENT "MG" LEAKING IN
+    let dose = document.getElementById('pt-dose').value.replace(/[^\d.]/g, '').trim();
+    let rxDose = document.getElementById('rx-dose').value.replace(/[^\d.]/g, '').trim();
+    
     const drug = document.getElementById('rx-drug').value;
     const duration = document.getElementById('rx-duration').value;
     const compPoor = document.getElementById('comp-poor').checked;
+    
+    // WE USE 'MCG' INSTEAD OF 'µG' TO AVOID PRINTER GLITCHES
+    let unit = isHypo ? 'MCG' : 'MG';
+    let displayDose = dose ? (dose + ' ' + unit) : ('____ ' + unit);
+    let displayNewDose = rxDose ? (rxDose + ' ' + unit) : ('____ ' + unit);
 
     let html = '';
 
-    // 1. Diagnosis (Now smaller & at the very top)
-    let dxText = isNew ? dx.toUpperCase() : (isHypo ? `K/C/O HYPOTHYROIDISM ON TAB. THYROXINE ${dose ? dose : '____'}` : `K/C/O HYPERTHYROIDISM ${drug ? 'ON TAB. ' + drug.toUpperCase() : ''} ${dose ? dose : ''}`);
+    // 5. DIAGNOSIS
+    let dxText = isNew ? dx.toUpperCase() : (isHypo ? `K/C/O HYPOTHYROIDISM ON TAB. THYROXINE ${displayDose}` : `K/C/O HYPERTHYROIDISM ${drug ? 'ON TAB. ' + drug.toUpperCase() : ''} ${displayDose}`);
     if (moa && gender === 'F') dxText += ` (MOA: ${moa} MONTHS)`;
     html += `<div class="rx-dx-block">${dxText}</div>`;
 
-    // 2. Extra Labs (FT3/FT4)
     if (labsVal && (labsVal.includes('FT3') || labsVal.includes('FT4'))) {
-      html += `<div class="rx-labs">Labs: ${labsVal}</div>`;
+      html += `<div class="rx-labs">LABS: ${labsVal}</div>`;
     }
 
-    // 3. Compliance Alert (Above Rx)
     if (compPoor) {
-      html += `<div class="rx-alert"><b>POOR COMPLIANCE NOTED:</b> Counselled for strict empty stomach morning dosing and avoiding food/tea for 45 mins.</div>`;
+      html += `<div class="rx-alert"><b>POOR COMPLIANCE NOTED:</b> COUNSELLED FOR STRICT EMPTY STOMACH MORNING DOSING AND AVOIDING FOOD/TEA FOR 45 MINS.</div>`;
     }
 
-    // 4. Dietary Advice (Above Rx)
     if (isHypo) {
-      html += `<div class="rx-diet"><b>DIETARY ADVICE:</b><br>• Use iodised salt (Tata, Nirma, etc.); avoid sindha namak (non-iodised).<br>• Avoid cabbage / cauliflower (કોબી / ફૂલાવર).</div>`;
+      html += `<div class="rx-diet"><b>DIETARY ADVICE:</b><br>• USE IODISED SALT (TATA, NIRMA, ETC.); AVOID SINDHA NAMAK (NON-IODISED).<br>• AVOID CABBAGE / CAULIFLOWER (કોબી / ફૂલાવર).</div>`;
     }
 
-    // 5. ℞ SYMBOL INJECTED HERE
     html += `<div class="rx-symbol">℞</div>`;
 
-
-   // 6. PRESCRIBED MEDICATION BLOCK
-    // DYNAMIC UNIT SELECTION: µg FOR HYPO, mg FOR HYPER
-    let currentUnit = isHypo ? 'µg' : 'mg';
+    // 6. FINAL DRUG BLOCK
     let rxName = isHypo ? 'TAB. THYROXINE' : `TAB. ${drug ? drug.toUpperCase() : '___________'}`;
     let rxInst = isHypo ? 'OD EMPTY STOMACH (MORNING)' : 'OD';
     
-    // ENSURE THE DOSE STRING HAS THE CORRECT UNIT
-    let displayDose = rxDose || '';
-    if (displayDose && !displayDose.toLowerCase().includes('g')) {
-        displayDose += ' ' + currentUnit;
-    } else if (!displayDose) {
-        displayDose = '____ ' + currentUnit;
-    }
-
     html += `<div class="rx-drug-block">
-               <div class="rx-drug-name">${rxName} ${displayDose}</div>
-               <div class="rx-drug-inst">Take 1 tablet daily (${rxInst})</div>
-               ${duration ? `<div class="rx-duration">Dispense for: ${duration.toUpperCase()}</div>` : ''}
+               <div class="rx-drug-name">${rxName} ${displayNewDose}</div>
+               <div class="rx-drug-inst">TAKE 1 TABLET DAILY (${rxInst})</div>
+               ${duration ? `<div class="rx-duration">DISPENSE FOR: ${duration.toUpperCase()}</div>` : ''}
              </div>`;
 
-    // Inject the structured DOM
     document.getElementById('pr-note-content').innerHTML = html;
-
-    // Follow-up Text Box
-    document.getElementById('pr-fu').innerText = document.getElementById('rx-fu').value || "______________________";
+    document.getElementById('pr-fu').innerText = document.getElementById('rx-fu').value.toUpperCase() || "______________________";
     
     window.print();
   }
