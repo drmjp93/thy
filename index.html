@@ -603,12 +603,12 @@
   // ==========================================
   // GENERATE NOTE FROM FORM FIELDS
   // ==========================================
-  function generateNote() {
+function generateNote() {
     const dx      = document.getElementById('pt-dx').value;
-    const dose    = document.getElementById('pt-dose').value;
+    let dose      = document.getElementById('pt-dose').value;
     const moa     = document.getElementById('pt-moa').value;
     const labs    = document.getElementById('pt-labs').value;
-    const manualRx= document.getElementById('rx-dose').value;
+    let manualRx  = document.getElementById('rx-dose').value;
     const drug    = document.getElementById('rx-drug').value;
     const duration= document.getElementById('rx-duration').value;
     const fu      = document.getElementById('rx-fu').value;
@@ -618,12 +618,20 @@
     const isHypo  = !dx.toLowerCase().includes('hyper');
     const isNew   = dx.toLowerCase().includes('newly');
 
+    // --- STRICT UNIT ENFORCEMENT: STRIP LETTERS, FORCE CORRECT UNIT ---
+    let cleanDose = dose.replace(/[^\d.]/g, '').trim();
+    let cleanRxDose = manualRx.replace(/[^\d.]/g, '').trim();
+    
+    let unit = isHypo ? 'µg' : 'mg';
+    let displayCurrentDose = cleanDose ? (cleanDose + ' ' + unit) : '';
+    let displayNewDose = cleanRxDose ? (cleanRxDose + ' ' + unit) : ('____ ' + unit);
+
     let note = '';
 
     if (isNew) note += dx.toUpperCase();
     else {
-      if (isHypo) note += `K/C/O HYPOTHYROIDISM ON TAB. THYROXINE ${dose ? dose.toUpperCase() : '____ µg'}`;
-      else note += `K/C/O HYPERTHYROIDISM${drug ? ' ON TAB. ' + drug.toUpperCase() : ''}${dose ? ' ' + dose : ''}`;
+      if (isHypo) note += `K/C/O HYPOTHYROIDISM ON TAB. THYROXINE ${displayCurrentDose || '____ µg'}`;
+      else note += `K/C/O HYPERTHYROIDISM${drug ? ' ON TAB. ' + drug.toUpperCase() : ''}${displayCurrentDose ? ' ' + displayCurrentDose : ''}`;
     }
 
     if (moa && gender === 'Female') note += `\n* MOA: ${moa} MONTH${parseInt(moa) > 1 ? 'S' : ''} OF AMENORRHOEA`;
@@ -636,8 +644,8 @@
     if (isHypo) note += `\nDIETARY ADVICE:\n- Use iodised salt (Tata, Nirma, etc.); avoid sindha namak (non-iodised)\n- Avoid cabbage / cauliflower (કોબી / ફૂલાવર)\n`;
 
     note += `\nADV:`;
-    if (isHypo) note += `\n- TAB. THYROXINE ${manualRx || '____ µg'} OD EMPTY STOMACH (MORNING)`;
-   else note += `\n- TAB. ${drug ? drug.toUpperCase() : '___________'} ${manualRx || (isHypo ? '____ µg' : '____ mg')} OD`;
+    if (isHypo) note += `\n- TAB. THYROXINE ${displayNewDose} OD EMPTY STOMACH (MORNING)`;
+    else note += `\n- TAB. ${drug ? drug.toUpperCase() : '___________'} ${displayNewDose} OD`;
     
     if (duration) note += `\n  FOR ${duration.toUpperCase()}`;
     if (fu) note += `\n\nFOLLOW UP: ${fu}`;
