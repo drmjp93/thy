@@ -802,12 +802,23 @@
 
     // 5. ℞ SYMBOL INJECTED HERE
     html += `<div class="rx-symbol">℞</div>`;
+// 6. ℞ SYMBOL INJECTED HERE
+    html += `<div class="rx-symbol">℞</div>`;
 
-    // 6. Prescribed Medication Block (Just below ℞)
+    // 6. PRESCRIBED MEDICATION BLOCK (JUST BELOW ℞)
+    // FIX: ENSURE UNIT IS µG (MCG) FOR HYPOTHYROID
+    let unit = isHypo ? 'µg' : 'mg'; 
     let rxName = isHypo ? 'TAB. THYROXINE' : `TAB. ${drug ? drug.toUpperCase() : '___________'}`;
     let rxInst = isHypo ? 'OD EMPTY STOMACH (MORNING)' : 'OD';
+    
+    // ENSURE rxDose SHOWS THE CORRECT UNIT IF NOT ALREADY PRESENT
+    let displayDose = rxDose;
+    if (displayDose && !displayDose.includes('µg') && !displayDose.includes('mg')) {
+        displayDose += ' ' + unit;
+    }
+
     html += `<div class="rx-drug-block">
-               <div class="rx-drug-name">${rxName} ${rxDose || '____'}</div>
+               <div class="rx-drug-name">${rxName} ${displayDose || '____ ' + unit}</div>
                <div class="rx-drug-inst">Take 1 tablet daily (${rxInst})</div>
                ${duration ? `<div class="rx-duration">Dispense for: ${duration.toUpperCase()}</div>` : ''}
              </div>`;
