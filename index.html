@@ -637,7 +637,7 @@
 
     note += `\nADV:`;
     if (isHypo) note += `\n- TAB. THYROXINE ${manualRx || '____ µg'} OD EMPTY STOMACH (MORNING)`;
-    else note += `\n- TAB. ${drug ? drug.toUpperCase() : '___________'} ${manualRx || '____ mg'} OD`;
+   else note += `\n- TAB. ${drug ? drug.toUpperCase() : '___________'} ${manualRx || (isHypo ? '____ µg' : '____ mg')} OD`;
     
     if (duration) note += `\n  FOR ${duration.toUpperCase()}`;
     if (fu) note += `\n\nFOLLOW UP: ${fu}`;
@@ -802,23 +802,24 @@
 
     // 5. ℞ SYMBOL INJECTED HERE
     html += `<div class="rx-symbol">℞</div>`;
-// 6. ℞ SYMBOL INJECTED HERE
-    html += `<div class="rx-symbol">℞</div>`;
 
-    // 6. PRESCRIBED MEDICATION BLOCK (JUST BELOW ℞)
-    // FIX: ENSURE UNIT IS µG (MCG) FOR HYPOTHYROID
-    let unit = isHypo ? 'µg' : 'mg'; 
+
+   // 6. PRESCRIBED MEDICATION BLOCK
+    // DYNAMIC UNIT SELECTION: µg FOR HYPO, mg FOR HYPER
+    let currentUnit = isHypo ? 'µg' : 'mg';
     let rxName = isHypo ? 'TAB. THYROXINE' : `TAB. ${drug ? drug.toUpperCase() : '___________'}`;
     let rxInst = isHypo ? 'OD EMPTY STOMACH (MORNING)' : 'OD';
     
-    // ENSURE rxDose SHOWS THE CORRECT UNIT IF NOT ALREADY PRESENT
-    let displayDose = rxDose;
-    if (displayDose && !displayDose.includes('µg') && !displayDose.includes('mg')) {
-        displayDose += ' ' + unit;
+    // ENSURE THE DOSE STRING HAS THE CORRECT UNIT
+    let displayDose = rxDose || '';
+    if (displayDose && !displayDose.toLowerCase().includes('g')) {
+        displayDose += ' ' + currentUnit;
+    } else if (!displayDose) {
+        displayDose = '____ ' + currentUnit;
     }
 
     html += `<div class="rx-drug-block">
-               <div class="rx-drug-name">${rxName} ${displayDose || '____ ' + unit}</div>
+               <div class="rx-drug-name">${rxName} ${displayDose}</div>
                <div class="rx-drug-inst">Take 1 tablet daily (${rxInst})</div>
                ${duration ? `<div class="rx-duration">Dispense for: ${duration.toUpperCase()}</div>` : ''}
              </div>`;
