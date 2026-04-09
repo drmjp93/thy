@@ -567,7 +567,7 @@
       if (isHypo) note += `K/C/O HYPOTHYROIDISM ON TAB. THYROXINE ${currentDose ? currentDose + ' µg' : '____ µg'}`;
       else {
         let drugLine = drug ? `TAB. ${drug.toUpperCase()}` : 'ANTI-THYROID MEDICATION';
-        note += `K/C/O HYPERTHYROIDISM ON ${drugLine}${currentDose ? ' ' + currentDose + ' mg' : ''}`;
+        note += `K/C/O HYPERTHYROIDISM ON ${drugLine}${currentDose ? ' ' + currentDose + ' µg' : ''}`;
       }
     }
 
