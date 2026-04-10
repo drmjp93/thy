@@ -340,12 +340,17 @@
 </div>
 
 
-<div class="fixed bottom-0 left-0 w-full bg-[#37474F] text-[#ECEFF1] text-[11px] py-1.5 px-4 z-[9999] flex justify-center items-center gap-3 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] no-print font-sans tracking-wide">
+<style>
+    /* This forcefully hides the bar when you click Print */
+    @media print {
+        #clinic-floating-footer { display: none !important; }
+    }
+</style>
+<div id="clinic-floating-footer" style="position: fixed; bottom: 0; left: 0; width: 100%; background-color: #37474F; color: #ECEFF1; font-size: 11px; padding: 6px 16px; z-index: 9999; display: flex; justify-content: center; align-items: center; gap: 12px; box-shadow: 0 -4px 10px rgba(0,0,0,0.15); font-family: sans-serif; letter-spacing: 0.5px; box-sizing: border-box;">
     <span>&copy; Dr. Mit Panchani 2026-2027</span>
-    <span class="text-[#90A4AE] text-[14px] leading-none mb-0.5">•</span>
-    <span>Visitor Count - <span id="visitCount" class="font-bold text-[#18FFFF] ml-1 tracking-wider">...</span></span>
+    <span style="color: #90A4AE; font-size: 14px; line-height: 1;">•</span>
+    <span>Visitor count - <span id="visitCount" style="font-weight: bold; color: #18FFFF; margin-left: 4px; letter-spacing: 1px;">...</span></span>
 </div>
-
 
 
 <script>
