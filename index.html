@@ -339,6 +339,15 @@
   </div>
 </div>
 
+
+<div class="fixed bottom-0 left-0 w-full bg-[#37474F] text-[#ECEFF1] text-[11px] py-1.5 px-4 z-[9999] flex justify-center items-center gap-3 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] no-print font-sans tracking-wide">
+    <span>&copy; Dr. Mit Panchani 2026-2027</span>
+    <span class="text-[#90A4AE] text-[14px] leading-none mb-0.5">•</span>
+    <span>Visitor Count - <span id="visitCount" class="font-bold text-[#18FFFF] ml-1 tracking-wider">...</span></span>
+</div>
+
+
+
 <script>
 
   // ==========================================
@@ -902,6 +911,35 @@ function generateNote() {
                             return `<span class="th-chip th-future" title="${tok.hint}">${tok.label}</span>`;
     }).join('');
   }
+  
+  
+  
+  
+  // ========================================================
+// PAGE LOAD VISITOR COUNTER (DRUGS PAGE)
+// ========================================================
+(async function () {
+  const el = document.getElementById("visitCount");
+  if (!el) return;
+
+  try {
+    // Notice this now says 'drugs-page-visits' so it counts separately!
+    const resp = await fetch("https://api.counterapi.dev/v1/drmjp93in/thy-page-visits/up");
+    const j = await resp.json();
+
+    if (j && j.count !== undefined) {
+      el.textContent = j.count;
+    } else {
+      el.textContent = "0";
+    }
+  } catch (e) {
+    el.textContent = "—";
+  }
+})();
+
+  
+  
+  
 </script>
 </body>
 </html>
