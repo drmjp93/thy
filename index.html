@@ -929,7 +929,7 @@ function generateNote() {
 
   try {
     // Notice this now says 'drugs-page-visits' so it counts separately!
-    const resp = await fetch("https://api.counterapi.dev/v1/drmjp93in-1/thy-page-visits/up");
+    const resp = await fetch("https://visits.drmjp93.workers.dev/?tool=thy");
     const j = await resp.json();
 
     if (j && j.count !== undefined) {
