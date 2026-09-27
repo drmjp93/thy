@@ -17,22 +17,23 @@ padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bott
 body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
 button,input{font:inherit;color:inherit}button{cursor:pointer}
 .app{max-width:760px;margin:auto;min-height:100vh;padding:14px 14px 80px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
-.brand{font-size:23px;font-weight:800}.muted{color:var(--muted)}.tiny{font-size:11px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:15px;margin-bottom:12px}
+.top{margin-bottom:8px}.actionbar{display:flex;gap:7px;overflow-x:auto;margin-bottom:12px;padding-bottom:2px;-webkit-overflow-scrolling:touch}
+.actionbar button{white-space:nowrap;flex:0 0 auto}
+.brand{font-size:20px;font-weight:800}.muted{color:var(--muted)}.tiny{font-size:11px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:12px;margin-bottom:10px}
 .row{display:flex;justify-content:space-between;align-items:center;gap:10px}
-h2{font-size:19px;margin:0 0 10px}h3{font-size:15px;margin:0 0 9px}
-.btn{border:0;border-radius:13px;background:#111827;color:#fff;padding:11px 15px;font-weight:750}
-.btn.light{background:var(--border);color:var(--fg)}.btn.danger{background:#b91c1c;color:#fff}.btn.full{width:100%;padding:14px}
-.pills{display:flex;flex-wrap:wrap;gap:8px}
-.pill{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:10px 13px;font-weight:700}
+h2{font-size:16px;margin:0 0 8px}h3{font-size:13.5px;margin:0 0 7px}
+.btn{border:0;border-radius:12px;background:#111827;color:#fff;padding:9px 13px;font-weight:750;font-size:14px}
+.btn.light{background:var(--border);color:var(--fg)}.btn.danger{background:#b91c1c;color:#fff}.btn.full{width:100%;padding:12px}
+.pills{display:flex;flex-wrap:wrap;gap:7px}
+.pill{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:8px 12px;font-weight:700;font-size:13.5px;white-space:nowrap}
 .pill.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:800}.pill.next{box-shadow:0 0 0 3px #93c5fd66}
-.field{margin:12px 0}label{display:block;font-size:12px;color:var(--muted);font-weight:750;margin-bottom:6px}
+.field{margin:8px 0}label{display:block;font-size:11px;color:var(--muted);font-weight:750;margin-bottom:5px}
 input{width:100%;border:1px solid var(--border);border-radius:13px;padding:12px;outline:none;background:var(--card);color:var(--fg)}
 input:focus{border-color:#111827}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.metric{background:var(--soft);border:1px solid var(--border);border-radius:14px;padding:11px}
-.metric b{font-size:20px;display:block}.metric span{font-size:11px;color:var(--muted)}
+.metric{background:var(--soft);border:1px solid var(--border);border-radius:12px;padding:9px}
+.metric b{font-size:17px;display:block}.metric span{font-size:10.5px;color:var(--muted)}
 .patient{padding:14px;display:flex;justify-content:space-between;align-items:center}
 .name{font-size:17px;font-weight:800}.bed{font-size:12px;color:var(--muted);margin-top:3px}
 .badge{font-size:11px;font-weight:800;padding:6px 8px;border-radius:999px;background:#eef2f7;color:#111827}
@@ -43,11 +44,17 @@ input:focus{border-color:#111827}
 .timeline{display:flex;flex-direction:column;gap:7px;max-height:340px;overflow-y:auto}
 .event{display:flex;justify-content:space-between;gap:10px;border:1px solid var(--border);border-radius:12px;padding:10px}
 .event b{font-size:13px}.event small{color:var(--muted)}.event time{font-size:11px;color:var(--muted);white-space:nowrap}
+.event2{display:flex;align-items:stretch;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.event2 .e-left{padding:10px;flex:1;min-width:0}
+.event2 .e-left b{font-size:13px;display:block}
+.event2 .e-left .tiny{margin-top:3px}
+.event2 .e-ins{background:var(--accent);color:var(--accent-fg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 16px;font-size:19px;font-weight:800;min-width:56px}
+.event2 .e-ins span{font-size:9.5px;font-weight:700;margin-top:-2px}
 canvas{width:100%;height:240px;display:block}.graph{border:1px solid var(--border);border-radius:14px;padding:8px;overflow-x:auto}
 .legend{font-size:11px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
 .line{display:inline-block;width:22px;border-top:3px solid var(--accent);vertical-align:middle}
 .dot{display:inline-block;width:22px;border-top:2px dotted #9ca3af;vertical-align:middle}
-.review{display:grid;grid-template-columns:1.1fr .9fr .8fr;border-bottom:1px solid var(--border);padding:9px 0;font-size:13px}
+.review{display:grid;grid-template-columns:.9fr .75fr .7fr .75fr .7fr;border-bottom:1px solid var(--border);padding:8px 0;font-size:11.5px;gap:2px}
 .review:last-child{border-bottom:0}.empty{text-align:center;padding:28px;color:var(--muted)}
 </style>
 </head>
@@ -119,7 +126,7 @@ function render(){
 }
 
 function top(title,sub,button){
- return '<div class="top"><div><div class="brand">'+esc(title)+'</div><div class="tiny muted">'+esc(sub)+'</div></div>'+button+'</div>';
+ return '<div class="top"><div class="brand">'+esc(title)+'</div><div class="tiny muted" style="margin-bottom:8px">'+esc(sub)+'</div><div class="actionbar">'+button+'</div></div>';
 }
 
 function patientCard(p){
@@ -129,7 +136,7 @@ function patientCard(p){
 
 function home(){
  var list=active();
- var out=top("Ward Monitor","Shared bedside monitoring",'<button class="pill" onclick="loadFromApi()">↻ Sync</button><button class="pill" onclick="setUser()">Staff: '+esc(currentUser()||"set name")+'</button><button class="btn" onclick="newP()">+ New Patient</button>');
+ var out=top("Ward Monitor","Shared bedside monitoring",'<button class="pill" onclick="loadFromApi()">↻ Sync</button><button class="btn" onclick="newP()">+ New Patient</button>');
  if(SYNC_STATE==="syncing")out+='<div class="notice" style="margin-bottom:12px">Syncing with cloud…</div>';
  if(SYNC_STATE==="error")out+='<div class="notice warn" style="margin-bottom:12px">Could not reach cloud. Showing last synced copy — new entries are saved on this device until sync succeeds.</div>';
  if(lastSnapshot)out+='<div class="notice warn row" style="margin-bottom:12px"><span>Last action: '+esc(lastAction||"edit")+'</span><button class="pill" onclick="undo()">Undo</button></div>';
@@ -217,23 +224,23 @@ function pcm24(p){
 
 function fever(p){
  var out='';
- if(!p.discharged)out+='<div class="card"><h3>Add temperature</h3><div class="field"><label>Temperature (°F)</label><input id="tv" type="number" step="0.1" inputmode="decimal" placeholder="e.g. 101.2"></div><button class="btn full" onclick="saveTemp()">Save temperature</button></div>';
+ if(!p.discharged)out+='<div class="card"><h3>Add temperature</h3><div class="row" style="align-items:flex-end"><div class="field" style="flex:1;margin:0"><label>Temperature (°F)</label><input id="tv" type="number" step="0.1" inputmode="decimal" placeholder="e.g. 101.2"></div><button class="btn" onclick="saveTemp()">Save</button></div></div>';
  var total=pcm24(p);
- out+='<div class="card"><div class="row"><h2>PCM · rolling 24 hours</h2><span class="badge">'+total+' / 4000 mg</span></div><div class="grid2"><div class="metric"><b>'+total+' mg</b><span>Given</span></div><div class="metric"><b>'+Math.max(0,4000-total)+' mg</b><span>Remaining to 4 g threshold</span></div></div>';
- if(!p.discharged)out+='<div style="height:12px"></div><h3>Quick dose</h3><div class="pills"><button class="pill" onclick="pcm(500)">500 mg</button><button class="pill" onclick="pcm(650)">650 mg</button><button class="pill" onclick="pcm(900)">900 mg</button><button class="pill" onclick="pcm(1000)">1000 mg</button></div>';
+ out+='<div class="card"><div class="row"><h3 style="margin:0">PCM · rolling 24h</h3><span class="badge">'+total+' / 4000 mg</span></div>';
+ if(!p.discharged)out+='<div class="pills" style="margin-top:9px"><button class="pill" onclick="pcm(500)">500 mg</button><button class="pill" onclick="pcm(650)">650 mg</button><button class="pill" onclick="pcm(900)">900 mg</button><button class="pill" onclick="pcm(1000)">1000 mg</button></div>';
  out+='</div>';
- out+='<div class="card"><h3>Temperature timeline</h3><div class="timeline">';
- if(!p.temp.length)out+='<div class="empty">No readings yet.</div>';
- p.temp.slice().reverse().forEach(function(x){out+='<div class="event"><b>'+x[1].toFixed(1)+' °F</b><time>'+fmt(x[0])+'</time></div>'});
- out+='</div></div>';
- out+='<div class="card"><h3>PCM dose log</h3><div class="timeline">';
- if(!p.pcm.length)out+='<div class="empty">No doses given yet.</div>';
- p.pcm.slice().reverse().forEach(function(x){
-  var near=nearestTemp(p,x[0]);
-  out+='<div class="event"><div><b>'+x[1]+' mg</b><br><small>'+(near?"Temp at time: "+near[1].toFixed(1)+" °F":"No nearby temp reading")+(x[2]?" · by "+esc(x[2]):"")+'</small></div><time>'+fmt(x[0])+'</time></div>';
+ out+='<div class="card"><h3>Temperature & PCM log</h3><div class="timeline">';
+ var items=[];
+ p.temp.forEach(function(x){items.push({ts:x[0],k:"t",v:x[1]})});
+ p.pcm.forEach(function(x){items.push({ts:x[0],k:"p",v:x[1],by:x[2]})});
+ items.sort(function(a,b){return b.ts-a.ts});
+ if(!items.length)out+='<div class="empty">No entries yet.</div>';
+ items.forEach(function(it){
+  if(it.k==="t")out+='<div class="event"><b>'+it.v.toFixed(1)+' °F</b><time>'+fmt(it.ts)+'</time></div>';
+  else{var near=nearestTemp(p,it.ts);out+='<div class="event"><div><b>PCM '+it.v+' mg</b><br><small>'+(near?"at "+near[1].toFixed(1)+" °F":"no nearby temp")+(it.by?" · "+esc(it.by):"")+'</small></div><time>'+fmt(it.ts)+'</time></div>'}
  });
  out+='</div></div>';
- out+='<div class="card"><div class="row"><h2>Temperature history</h2><span class="tiny muted">Entire admission</span></div><div class="graph"><canvas id="cv" width="700" height="300"></canvas><div class="legend"><span><i class="line"></i>Temperature</span><span><i class="dot"></i>Normal reference 97.0–99.5 °F</span></div></div></div>';
+ out+='<div class="card"><div class="row"><h2>Temperature history</h2><span class="tiny muted">Entire admission</span></div><div class="graph"><canvas id="cv" width="700" height="300"></canvas><div class="legend"><span><i class="line"></i>Temperature</span><span><i class="dot"></i>Normal reference 97.0–99.5 °F</span><span><i style="display:inline-block;width:22px;height:10px;background:rgba(96,165,250,0.35);vertical-align:middle;border-radius:2px"></i>Last 24h</span><span><i style="display:inline-block;width:22px;height:10px;background:rgba(239,68,68,0.4);vertical-align:middle;border-radius:2px"></i>Fever spike (≥100.4°F)</span></div></div></div>';
  return out;
 }
 
@@ -255,7 +262,14 @@ function draw(){
  var minT=d.length?d[0][0]:0,maxT=d.length?d[d.length-1][0]:1;
  function yy(v){return T+(max-v)/(max-min)*H}
  function xx(t){return maxT>minT?L+(t-minT)/(maxT-minT)*W:L+W/2}
- ctx.clearRect(0,0,w,h);ctx.font="12px Arial";ctx.fillStyle=muted;
+ ctx.clearRect(0,0,w,h);
+ var FEVER=100.4,now=Date.now(),cutoff=now-86400000;
+ if(d.length&&maxT>minT){
+  var bx1=xx(Math.max(cutoff,minT)),bx2=xx(Math.min(now,maxT));
+  if(bx2>bx1){ctx.fillStyle="rgba(96,165,250,0.12)";ctx.fillRect(bx1,T,bx2-bx1,H);ctx.fillStyle=muted;ctx.font="10px Arial";ctx.fillText("last 24h",bx1+4,T+11)}
+  d.forEach(function(x){if(x[0]>=cutoff&&x[1]>=FEVER){var cx=xx(x[0]);ctx.fillStyle="rgba(239,68,68,0.22)";ctx.fillRect(cx-7,T,14,H)}});
+ }
+ ctx.font="12px Arial";ctx.fillStyle=muted;
  var ticks=[];for(var ti=0;ti<=4;ti++){ticks.push(Math.round((min+(max-min)*ti/4)*10)/10)}
  ticks.forEach(function(v){var y=yy(v);ctx.strokeStyle=border;ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.fillStyle=muted;ctx.fillText(v+"°",4,y+4)});
  [97,99.5].forEach(function(v){var y=yy(v);ctx.strokeStyle=muted;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke()});ctx.setLineDash([]);
@@ -263,7 +277,7 @@ function draw(){
  ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();
  d.forEach(function(x,i){var q=xx(x[0]),r=yy(x[1]);if(i===0)ctx.moveTo(q,r);else ctx.lineTo(q,r)});ctx.stroke();
  ctx.font="11px Arial";
- d.forEach(function(x){var q=xx(x[0]),r=yy(x[1]);ctx.fillStyle=accent;ctx.beginPath();ctx.arc(q,r,4,0,Math.PI*2);ctx.fill();ctx.fillStyle=fg;ctx.fillText(x[1].toFixed(1),q-10,r-9)});
+ d.forEach(function(x){var q=xx(x[0]),r=yy(x[1]),isFever=x[1]>=FEVER;ctx.fillStyle=isFever?"#dc2626":accent;ctx.beginPath();ctx.arc(q,r,4,0,Math.PI*2);ctx.fill();ctx.fillStyle=fg;ctx.fillText(x[1].toFixed(1),q-10,r-9)});
 }
 
 function nextCP(p){
@@ -275,15 +289,15 @@ function sugar(p){
  var a=["FBS","BL","Noon PPBS","BD","Dinner PPBS","3 AM"],out='<div class="card"><div class="row"><h2>Checkpoint entry</h2><span class="badge">Next: '+nextCP(p)+'</span></div><div class="pills">';
  a.forEach(function(cp){out+='<button class="pill '+(S.checkpoint===cp?"on ":"")+(nextCP(p)===cp?"next":"")+'" onclick="cp(\''+cp+'\')">'+cp+'</button>'});
  out+='</div>';
- if(!p.discharged)out+='<div class="field"><label>Blood glucose (mg/dL) · '+S.checkpoint+'</label><input id="gv" type="number" inputmode="decimal" placeholder="Enter glucose"></div><div class="field"><label>Insulin given (units)</label><input id="iv" type="number" step="0.5" inputmode="decimal" placeholder="Enter units"></div>'+previous(p,S.checkpoint)+'<button class="btn full" onclick="saveSugar()">Save '+S.checkpoint+'</button>';
+ if(!p.discharged)out+='<div class="grid2"><div class="field"><label>Glucose (mg/dL)</label><input id="gv" type="number" inputmode="decimal" placeholder="e.g. 140"></div><div class="field"><label>Insulin (units)</label><input id="iv" type="number" step="0.5" inputmode="decimal" placeholder="e.g. 6"></div></div>'+previous(p,S.checkpoint)+'<button class="btn full" onclick="saveSugar()">Save '+S.checkpoint+'</button>';
  out+='</div>';
  var y=day(Date.now()-86400000),t=day(Date.now()),yg=groups(p,y),tg=groups(p,t);
- out+='<div class="card"><h2>Previous day review</h2><div class="notice good"><b>FBS:</b> '+yg.fbs+' U · <b>Afternoon:</b> '+yg.afternoon+' U · <b>Evening:</b> '+yg.evening+' U · <b>3 AM:</b> '+yg.three+' U · <b>Total:</b> '+yg.total+' U</div><div class="review"><b>Checkpoint</b><b>Glucose</b><b>Insulin</b>';
- a.forEach(function(cp){var e=find(p,y,cp);out+='<div>'+cp+'</div><div>'+(e?e[2]+" mg/dL":"—")+'</div><div>'+(e?e[3]:0)+' U</div>'});out+='</div></div>';
- out+='<div class="card"><h2>Today</h2><div class="grid2"><div class="metric"><b>'+tg.fbs+' U</b><span>FBS insulin</span></div><div class="metric"><b>'+tg.afternoon+' U</b><span>Afternoon (BL + Noon PPBS)</span></div><div class="metric"><b>'+tg.evening+' U</b><span>Evening (BD + Dinner PPBS)</span></div><div class="metric"><b>'+tg.total+' U</b><span>Total daily insulin</span></div></div></div>';
+ out+='<div class="card"><h2>Previous day vs today</h2><div class="notice good">Prev total: '+yg.total+' U · Today total: '+tg.total+' U</div><div class="review" style="border-bottom:0;padding-bottom:0;font-weight:800"><div></div><div style="grid-column:span 2;text-align:center">Yesterday</div><div style="grid-column:span 2;text-align:center">Today</div></div><div class="review" style="color:var(--muted);font-weight:700"><div>Checkpoint</div><div>Glucose</div><div>Insulin</div><div>Glucose</div><div>Insulin</div></div>';
+ a.forEach(function(cp){var ye=find(p,y,cp),te=find(p,t,cp);out+='<div class="review"><div>'+cp+'</div><div>'+(ye?ye[2]:"—")+'</div><div>'+(ye?ye[3]:0)+'U</div><div>'+(te?te[2]:"—")+'</div><div>'+(te?te[3]:0)+'U</div></div>'});
+ out+='<div class="tiny muted" style="margin-top:8px">Prev — FBS '+yg.fbs+'U · Afternoon '+yg.afternoon+'U · Evening '+yg.evening+'U · 3AM '+yg.three+'U<br>Today — FBS '+tg.fbs+'U · Afternoon '+tg.afternoon+'U · Evening '+tg.evening+'U · 3AM '+tg.three+'U</div></div>';
  out+='<div class="card"><h3>Recent timeline</h3><div class="timeline">';
  if(!p.sugar.length)out+='<div class="empty">No entries yet.</div>';
- p.sugar.slice().reverse().slice(0,20).forEach(function(x){out+='<div class="event"><div><b>'+x[1]+' · '+x[2]+' mg/dL</b><br><small>'+x[3]+' U insulin</small></div><time>'+fmt(x[0])+'</time></div>'});
+ p.sugar.slice().reverse().slice(0,20).forEach(function(x){out+='<div class="event2"><div class="e-left"><b>'+x[1]+' · '+x[2]+' mg/dL</b><div class="tiny muted">'+fmt(x[0])+'</div></div><div class="e-ins">'+x[3]+'<span>UNITS</span></div></div>'});
  out+='</div></div>';return out;
 }
 
