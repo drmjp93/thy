@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ward Monitor">
+<title>Ward Monitor</title>
+<style>
+:root{--bg:#f3f4f6;--fg:#111827;--card:#fff;--border:#e5e7eb;--muted:#6b7280;--soft:#f8fafc;--accent:#2563eb;--accent-fg:#ffffff;
+padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0b0f17;--fg:#e5e7eb;--card:#151b26;--border:#2a3140;--muted:#8b93a3;--soft:#10151f;--accent:#60a5fa;--accent-fg:#0b0f17}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+button,input{font:inherit;color:inherit}button{cursor:pointer}
+.app{max-width:760px;margin:auto;min-height:100vh;padding:14px 14px 80px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.brand{font-size:23px;font-weight:800}.muted{color:var(--muted)}.tiny{font-size:11px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:15px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h2{font-size:19px;margin:0 0 10px}h3{font-size:15px;margin:0 0 9px}
+.btn{border:0;border-radius:13px;background:#111827;color:#fff;padding:11px 15px;font-weight:750}
+.btn.light{background:var(--border);color:var(--fg)}.btn.danger{background:#b91c1c;color:#fff}.btn.full{width:100%;padding:14px}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{border:1px solid var(--border);background:var(--card);border-radius:999px;padding:10px 13px;font-weight:700}
+.pill.on{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:800}.pill.next{box-shadow:0 0 0 3px #93c5fd66}
+.field{margin:12px 0}label{display:block;font-size:12px;color:var(--muted);font-weight:750;margin-bottom:6px}
+input{width:100%;border:1px solid var(--border);border-radius:13px;padding:12px;outline:none;background:var(--card);color:var(--fg)}
+input:focus{border-color:#111827}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.metric{background:var(--soft);border:1px solid var(--border);border-radius:14px;padding:11px}
+.metric b{font-size:20px;display:block}.metric span{font-size:11px;color:var(--muted)}
+.patient{padding:14px;display:flex;justify-content:space-between;align-items:center}
+.name{font-size:17px;font-weight:800}.bed{font-size:12px;color:var(--muted);margin-top:3px}
+.badge{font-size:11px;font-weight:800;padding:6px 8px;border-radius:999px;background:#eef2f7;color:#111827}
+.fever{background:#fff7ed;color:#9a3412}.sugar{background:#eff6ff;color:#1d4ed8}.both{background:#f5f3ff;color:#6d28d9}
+.tabs{display:flex;gap:7px;overflow:auto;margin-bottom:12px}.tabs .pill{white-space:nowrap}
+.notice{padding:11px 12px;border:1px solid var(--border);border-radius:13px;background:var(--soft);font-size:13px}
+.notice.warn{background:#fff7ed;border-color:#fed7aa;color:#9a3412}.notice.good{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+.timeline{display:flex;flex-direction:column;gap:7px;max-height:340px;overflow-y:auto}
+.event{display:flex;justify-content:space-between;gap:10px;border:1px solid var(--border);border-radius:12px;padding:10px}
+.event b{font-size:13px}.event small{color:var(--muted)}.event time{font-size:11px;color:var(--muted);white-space:nowrap}
+canvas{width:100%;height:240px;display:block}.graph{border:1px solid var(--border);border-radius:14px;padding:8px;overflow-x:auto}
+.legend{font-size:11px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.line{display:inline-block;width:22px;border-top:3px solid var(--accent);vertical-align:middle}
+.dot{display:inline-block;width:22px;border-top:2px dotted #9ca3af;vertical-align:middle}
+.review{display:grid;grid-template-columns:1.1fr .9fr .8fr;border-bottom:1px solid var(--border);padding:9px 0;font-size:13px}
+.review:last-child{border-bottom:0}.empty{text-align:center;padding:28px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+(function(){
+"use strict";
+var STORE_KEY="wardMonitorV1";
+var API_KEY="wardMonitorApi";
+var DEFAULT_API="https://ward-monitor-api.drmjp93.workers.dev";
+var SYNC_STATE="idle";
+
+function apiBase(){try{return localStorage.getItem(API_KEY)||DEFAULT_API}catch(e){return DEFAULT_API}}
+function setApiBase(){var n=prompt("Cloudflare Worker URL:",apiBase());if(n===null)return;n=n.trim().replace(/\/$/,"");try{localStorage.setItem(API_KEY,n)}catch(e){}loadFromApi()}
+function apiPost(path,body){var base=apiBase();if(!base)return;return fetch(base+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(){loadFromApi()}).catch(function(e){SYNC_STATE="error";render()})}
+
+function seed(){
+ var now=Date.now(),H=3600000;
+ return [
+  {id:"1",name:"Ramesh Patel",bed:"B-12",type:"both",discharged:false,last:"Noon PPBS",
+   temp:[[now-51*H,100.8],[now-45*H,101.7],[now-39*H,99.4],[now-33*H,102.1],[now-27*H,100.1],[now-20*H,102.4],[now-14*H,99.6],[now-8*H,101.3],[now-2*H,99.1]],
+   pcm:[[now-30*H,1000],[now-22*H,650],[now-15*H,900],[now-8*H,650],[now-3*H,500]],
+   sugar:[[now-26*H,"FBS",126,0],[now-24.5*H,"BL",118,6],[now-23.5*H,"Noon PPBS",184,4],[now-18*H,"BD",132,5],[now-17*H,"Dinner PPBS",162,6],[now-8*H,"3 AM",98,2],[now-2*H,"FBS",121,0],[now-1.2*H,"BL",115,5],[now-0.4*H,"Noon PPBS",176,4]]},
+  {id:"2",name:"Meena Shah",bed:"A-07",type:"sugar",discharged:false,last:null,temp:[],pcm:[],sugar:[]}
+ ];
+}
+
+var patients=[];
+function loadLocalCache(){try{var raw=localStorage.getItem(STORE_KEY);if(raw)return JSON.parse(raw)}catch(e){}return null}
+function save(){try{localStorage.setItem(STORE_KEY,JSON.stringify(patients))}catch(e){}}
+function loadFromApi(){
+ var base=apiBase();
+ SYNC_STATE="syncing";render();
+ fetch(base+"/api/patients").then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}).then(function(data){
+  patients=data;SYNC_STATE="ok";save();render();
+ }).catch(function(e){
+  patients=loadLocalCache()||seed();SYNC_STATE="error";render();
+ });
+}
+setInterval(function(){if(S.screen==="home")loadFromApi()},15000);
+
+var S={screen:"home",pid:null,tab:"summary",newType:"fever",checkpoint:"FBS"};
+var lastSnapshot=null,lastAction=null;
+function snapshot(label){lastSnapshot=JSON.stringify(patients);lastAction=label}
+function undo(){if(!lastSnapshot){return}patients=JSON.parse(lastSnapshot);lastSnapshot=null;lastAction=null;save();render()}
+function currentUser(){try{return localStorage.getItem("wardMonitorUser")||""}catch(e){return ""}}
+function setUser(){var n=prompt("Your name (shown on entries you log):",currentUser());if(n===null)return;n=n.trim();try{localStorage.setItem("wardMonitorUser",n)}catch(e){}render()}
+
+function el(id){return document.getElementById(id)}
+function patient(){for(var i=0;i<patients.length;i++)if(patients[i].id===S.pid)return patients[i];return null}
+function fmt(ts){return new Date(ts).toLocaleString([],{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}
+function day(ts){var x=new Date(ts);return x.getFullYear()+"-"+(x.getMonth()+1)+"-"+x.getDate()}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function typeText(t){return t==="fever"?"Fever / PCM":t==="sugar"?"Sugar / Insulin":"Both"}
+function typeClass(t){return t==="fever"?"fever":t==="sugar"?"sugar":"both"}
+function active(){return patients.filter(function(p){return !p.discharged})}
+function dischargedList(){return patients.filter(function(p){return p.discharged})}
+
+function render(){
+ try{
+  if(S.screen==="home")home();
+  else if(S.screen==="new")newPatient();
+  else if(S.screen==="discharged")dischargedScreen();
+  else viewPatient();
+ }catch(e){
+  el("root").innerHTML='<div class="app"><div class="card"><h2>Ward Monitor</h2><div class="notice warn">An error occurred. Reload the page.</div><div class="tiny muted">'+esc(e.message)+'</div></div></div>';
+ }
+}
+
+function top(title,sub,button){
+ return '<div class="top"><div><div class="brand">'+esc(title)+'</div><div class="tiny muted">'+esc(sub)+'</div></div>'+button+'</div>';
+}
+
+function patientCard(p){
+ var temp=p.temp.length?p.temp[p.temp.length-1][1].toFixed(1)+" °F":"—",glu=p.sugar.length?p.sugar[p.sugar.length-1][2]+" mg/dL":"—";
+ return '<div class="card patient" onclick="openP(\''+p.id+'\')"><div><div class="name">'+esc(p.name)+'</div><div class="bed">Bed '+esc(p.bed)+' · '+(p.type==="fever"?"Temp "+temp:p.type==="sugar"?"Glucose "+glu:"Temp "+temp+" · Glucose "+glu)+'</div></div><span class="badge '+typeClass(p.type)+'">'+typeText(p.type)+'</span></div>';
+}
+
+function home(){
+ var list=active();
+ var out=top("Ward Monitor","Shared bedside monitoring",'<button class="pill" onclick="loadFromApi()">↻ Sync</button><button class="pill" onclick="setUser()">Staff: '+esc(currentUser()||"set name")+'</button><button class="btn" onclick="newP()">+ New Patient</button>');
+ if(SYNC_STATE==="syncing")out+='<div class="notice" style="margin-bottom:12px">Syncing with cloud…</div>';
+ if(SYNC_STATE==="error")out+='<div class="notice warn" style="margin-bottom:12px">Could not reach cloud. Showing last synced copy — new entries are saved on this device until sync succeeds.</div>';
+ if(lastSnapshot)out+='<div class="notice warn row" style="margin-bottom:12px"><span>Last action: '+esc(lastAction||"edit")+'</span><button class="pill" onclick="undo()">Undo</button></div>';
+ out+='<div class="card"><div class="row"><h2>Active Patients</h2><span class="tiny muted">'+list.length+' active</span></div>';
+ if(!list.length)out+='<div class="empty">No active patients yet.</div>';
+ list.forEach(function(p){out+=patientCard(p)});
+ out+='</div>';
+ var dc=dischargedList();
+ if(dc.length)out+='<div class="card"><div class="row"><h3>Discharged</h3><span class="tiny muted">'+dc.length+' record'+(dc.length>1?"s":"")+'</span></div><button class="pill" onclick="showDischarged()">View discharge history</button></div>';
+ el("root").innerHTML='<div class="app">'+out+'</div>';
+}
+
+function dischargedScreen(){
+ var out=top("Discharged","Historical records, read-only",'<button class="btn light" onclick="home()">Home</button>');
+ out+='<div class="card"><h2>Discharged patients</h2>';
+ var dc=dischargedList();
+ if(!dc.length)out+='<div class="empty">No discharged patients.</div>';
+ dc.forEach(function(p){out+=patientCard(p)});
+ out+='</div>';
+ el("root").innerHTML='<div class="app">'+out+'</div>';
+}
+
+function newPatient(){
+ var out=top("New Patient","Create admission monitoring record",'<button class="btn light" onclick="home()">Cancel</button>');
+ out+='<div class="card"><h2>Monitoring type</h2><div class="pills">';
+ [["fever","Fever / PCM"],["sugar","Sugar / Insulin"],["both","Both"]].forEach(function(a){out+='<button class="pill '+(S.newType===a[0]?"on":"")+'" onclick="setType(\''+a[0]+'\')">'+a[1]+'</button>'});
+ out+='</div><div class="field"><label>Patient name</label><input id="nm" placeholder="Patient name"></div><div class="field"><label>Bed / Room</label><input id="bd" placeholder="e.g. B-14"></div><button class="btn full" onclick="createP()">Create Patient</button></div>';
+ el("root").innerHTML='<div class="app">'+out+'</div>';
+}
+
+function openP(id){S.pid=id;S.screen="patient";var p=patient();S.tab=(p&&p.type==="sugar")?"sugar":"fever";render()}
+function home_(){}
+function goHome(){S.screen="home";S.pid=null;render()}
+function newP(){S.screen="new";render()}
+function showDischarged(){var pin=prompt("Enter PIN to view discharge history:");if(pin===null)return;if(pin!=="0000"){alert("Incorrect PIN.");return}S.screen="discharged";render()}
+function setType(t){S.newType=t;render()}
+function tab(t){S.tab=t;render()}
+
+function viewPatient(){
+ var p=patient();if(!p){goHome();return}
+ var out=top(p.name,"Bed "+p.bed+" · "+typeText(p.type)+(p.discharged?" · Discharged":""),'<button class="btn light" onclick="goHome()">Patients</button>');
+ if(p.discharged)out+='<div class="notice warn">This patient is discharged. Records are read-only.</div>';
+ if(lastSnapshot)out+='<div class="notice warn row" style="margin-bottom:12px"><span>Last action: '+esc(lastAction||"edit")+'</span><button class="pill" onclick="undo()">Undo</button></div>';
+ out+='<div class="tabs"><button class="pill '+(S.tab==="summary"?"on":"")+'" onclick="tab(\'summary\')">Summary</button>';
+ if(p.type==="fever"||p.type==="both")out+='<button class="pill '+(S.tab==="fever"?"on":"")+'" onclick="tab(\'fever\')">Temp / PCM</button>';
+ if(p.type==="sugar"||p.type==="both")out+='<button class="pill '+(S.tab==="sugar"?"on":"")+'" onclick="tab(\'sugar\')">Sugar Review</button>';
+ out+='</div>';
+ if(S.tab==="summary")out+=summary(p);
+ else if(S.tab==="fever")out+=fever(p);
+ else out+=sugar(p);
+ if(!p.discharged)out+='<div class="card"><button class="btn danger full" onclick="dischargeP()">Discharge patient</button></div>';
+ el("root").innerHTML='<div class="app">'+out+'</div>';
+ if(S.tab==="fever")setTimeout(draw,10);
+}
+
+function dischargeP(){
+ var p=patient();if(!p)return;
+ if(!confirm("Discharge "+p.name+"? Historical data will remain viewable."))return;
+ snapshot("Discharge "+p.name);
+ p.discharged=true;p.dischargedAt=Date.now();save();goHome();
+ apiPost("/api/patients/"+p.id+"/discharge",{});
+}
+
+function summary(p){
+ var temp=p.temp.length?p.temp[p.temp.length-1][1].toFixed(1)+" °F":"—";
+ var glu=p.sugar.length?p.sugar[p.sugar.length-1][2]+" mg/dL":"—";
+ var pcm=pcm24(p);
+ var out='<div class="card"><h2>Current overview</h2><div class="grid3"><div class="metric"><b>'+temp+'</b><span>Latest temperature</span></div><div class="metric"><b>'+pcm+' mg</b><span>PCM / rolling 24h</span></div><div class="metric"><b>'+glu+'</b><span>Latest glucose</span></div></div></div>';
+ if(p.type==="fever"||p.type==="both")out+='<div class="card"><div class="row"><h3>Fever / PCM</h3><button class="pill" onclick="tab(\'fever\')">Open</button></div><div class="notice">Full-admission temperature graph and timestamp-based rolling 24-hour PCM total.</div></div>';
+ if(p.type==="sugar"||p.type==="both")out+='<div class="card"><div class="row"><h3>Sugar / Insulin</h3><button class="pill" onclick="tab(\'sugar\')">Open</button></div><div class="notice">Next checkpoint: <b>'+nextCP(p)+'</b>. Afternoon = BL + Noon PPBS. Evening = BD + Dinner PPBS.</div></div>';
+ return out;
+}
+
+function nearestTemp(p,ts){
+ if(!p.temp.length)return null;
+ var best=null,bd=Infinity;
+ p.temp.forEach(function(x){var d=Math.abs(x[0]-ts);if(d<bd){bd=d;best=x}});
+ return bd<=7200000?best:null; // within 2h
+}
+function pcm24(p){
+ var cutoff=Date.now()-86400000,total=0;
+ p.pcm.forEach(function(x){if(x[0]>=cutoff)total+=x[1]});
+ return total;
+}
+
+function fever(p){
+ var out='';
+ if(!p.discharged)out+='<div class="card"><h3>Add temperature</h3><div class="field"><label>Temperature (°F)</label><input id="tv" type="number" step="0.1" inputmode="decimal" placeholder="e.g. 101.2"></div><button class="btn full" onclick="saveTemp()">Save temperature</button></div>';
+ var total=pcm24(p);
+ out+='<div class="card"><div class="row"><h2>PCM · rolling 24 hours</h2><span class="badge">'+total+' / 4000 mg</span></div><div class="grid2"><div class="metric"><b>'+total+' mg</b><span>Given</span></div><div class="metric"><b>'+Math.max(0,4000-total)+' mg</b><span>Remaining to 4 g threshold</span></div></div>';
+ if(!p.discharged)out+='<div style="height:12px"></div><h3>Quick dose</h3><div class="pills"><button class="pill" onclick="pcm(500)">500 mg</button><button class="pill" onclick="pcm(650)">650 mg</button><button class="pill" onclick="pcm(900)">900 mg</button><button class="pill" onclick="pcm(1000)">1000 mg</button></div>';
+ out+='</div>';
+ out+='<div class="card"><h3>Temperature timeline</h3><div class="timeline">';
+ if(!p.temp.length)out+='<div class="empty">No readings yet.</div>';
+ p.temp.slice().reverse().forEach(function(x){out+='<div class="event"><b>'+x[1].toFixed(1)+' °F</b><time>'+fmt(x[0])+'</time></div>'});
+ out+='</div></div>';
+ out+='<div class="card"><h3>PCM dose log</h3><div class="timeline">';
+ if(!p.pcm.length)out+='<div class="empty">No doses given yet.</div>';
+ p.pcm.slice().reverse().forEach(function(x){
+  var near=nearestTemp(p,x[0]);
+  out+='<div class="event"><div><b>'+x[1]+' mg</b><br><small>'+(near?"Temp at time: "+near[1].toFixed(1)+" °F":"No nearby temp reading")+(x[2]?" · by "+esc(x[2]):"")+'</small></div><time>'+fmt(x[0])+'</time></div>';
+ });
+ out+='</div></div>';
+ out+='<div class="card"><div class="row"><h2>Temperature history</h2><span class="tiny muted">Entire admission</span></div><div class="graph"><canvas id="cv" width="700" height="300"></canvas><div class="legend"><span><i class="line"></i>Temperature</span><span><i class="dot"></i>Normal reference 97.0–99.5 °F</span></div></div></div>';
+ return out;
+}
+
+function draw(){
+ var p=patient(),c=el("cv");if(!p||!c)return;
+ var cs=getComputedStyle(document.documentElement);
+ var fg=cs.getPropertyValue("--fg").trim()||"#111827";
+ var muted=cs.getPropertyValue("--muted").trim()||"#6b7280";
+ var border=cs.getPropertyValue("--border").trim()||"#e5e7eb";
+ var accent=cs.getPropertyValue("--accent").trim()||"#2563eb";
+ var w=700,h=300,dpr=window.devicePixelRatio||1;
+ c.width=w*dpr;c.height=h*dpr;c.style.width="100%";c.style.height="240px";
+ var ctx=c.getContext("2d");ctx.setTransform(dpr,0,0,dpr,0,0);
+ var L=48,R=12,T=15,B=32,W=w-L-R,H=h-T-B;
+ var d=p.temp;
+ var vals=d.map(function(x){return x[1]});
+ var min=Math.floor(Math.min(96,vals.length?Math.min.apply(null,vals):96))-1;
+ var max=Math.ceil(Math.max(104,vals.length?Math.max.apply(null,vals):104))+1;
+ var minT=d.length?d[0][0]:0,maxT=d.length?d[d.length-1][0]:1;
+ function yy(v){return T+(max-v)/(max-min)*H}
+ function xx(t){return maxT>minT?L+(t-minT)/(maxT-minT)*W:L+W/2}
+ ctx.clearRect(0,0,w,h);ctx.font="12px Arial";ctx.fillStyle=muted;
+ var ticks=[];for(var ti=0;ti<=4;ti++){ticks.push(Math.round((min+(max-min)*ti/4)*10)/10)}
+ ticks.forEach(function(v){var y=yy(v);ctx.strokeStyle=border;ctx.setLineDash([]);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.fillStyle=muted;ctx.fillText(v+"°",4,y+4)});
+ [97,99.5].forEach(function(v){var y=yy(v);ctx.strokeStyle=muted;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke()});ctx.setLineDash([]);
+ if(!d.length)return;
+ ctx.strokeStyle=accent;ctx.lineWidth=3;ctx.beginPath();
+ d.forEach(function(x,i){var q=xx(x[0]),r=yy(x[1]);if(i===0)ctx.moveTo(q,r);else ctx.lineTo(q,r)});ctx.stroke();
+ ctx.font="11px Arial";
+ d.forEach(function(x){var q=xx(x[0]),r=yy(x[1]);ctx.fillStyle=accent;ctx.beginPath();ctx.arc(q,r,4,0,Math.PI*2);ctx.fill();ctx.fillStyle=fg;ctx.fillText(x[1].toFixed(1),q-10,r-9)});
+}
+
+function nextCP(p){
+ var a=["FBS","BL","Noon PPBS","BD","Dinner PPBS","3 AM"],i=a.indexOf(p.last);
+ return i<0?"FBS":a[(i+1)%a.length];
+}
+
+function sugar(p){
+ var a=["FBS","BL","Noon PPBS","BD","Dinner PPBS","3 AM"],out='<div class="card"><div class="row"><h2>Checkpoint entry</h2><span class="badge">Next: '+nextCP(p)+'</span></div><div class="pills">';
+ a.forEach(function(cp){out+='<button class="pill '+(S.checkpoint===cp?"on ":"")+(nextCP(p)===cp?"next":"")+'" onclick="cp(\''+cp+'\')">'+cp+'</button>'});
+ out+='</div>';
+ if(!p.discharged)out+='<div class="field"><label>Blood glucose (mg/dL) · '+S.checkpoint+'</label><input id="gv" type="number" inputmode="decimal" placeholder="Enter glucose"></div><div class="field"><label>Insulin given (units)</label><input id="iv" type="number" step="0.5" inputmode="decimal" placeholder="Enter units"></div>'+previous(p,S.checkpoint)+'<button class="btn full" onclick="saveSugar()">Save '+S.checkpoint+'</button>';
+ out+='</div>';
+ var y=day(Date.now()-86400000),t=day(Date.now()),yg=groups(p,y),tg=groups(p,t);
+ out+='<div class="card"><h2>Previous day review</h2><div class="notice good"><b>FBS:</b> '+yg.fbs+' U · <b>Afternoon:</b> '+yg.afternoon+' U · <b>Evening:</b> '+yg.evening+' U · <b>3 AM:</b> '+yg.three+' U · <b>Total:</b> '+yg.total+' U</div><div class="review"><b>Checkpoint</b><b>Glucose</b><b>Insulin</b>';
+ a.forEach(function(cp){var e=find(p,y,cp);out+='<div>'+cp+'</div><div>'+(e?e[2]+" mg/dL":"—")+'</div><div>'+(e?e[3]:0)+' U</div>'});out+='</div></div>';
+ out+='<div class="card"><h2>Today</h2><div class="grid2"><div class="metric"><b>'+tg.fbs+' U</b><span>FBS insulin</span></div><div class="metric"><b>'+tg.afternoon+' U</b><span>Afternoon (BL + Noon PPBS)</span></div><div class="metric"><b>'+tg.evening+' U</b><span>Evening (BD + Dinner PPBS)</span></div><div class="metric"><b>'+tg.total+' U</b><span>Total daily insulin</span></div></div></div>';
+ out+='<div class="card"><h3>Recent timeline</h3><div class="timeline">';
+ if(!p.sugar.length)out+='<div class="empty">No entries yet.</div>';
+ p.sugar.slice().reverse().slice(0,20).forEach(function(x){out+='<div class="event"><div><b>'+x[1]+' · '+x[2]+' mg/dL</b><br><small>'+x[3]+' U insulin</small></div><time>'+fmt(x[0])+'</time></div>'});
+ out+='</div></div>';return out;
+}
+
+function find(p,d,cp){for(var i=p.sugar.length-1;i>=0;i--){var x=p.sugar[i],dt=day(x[0]);if(dt===d&&x[1]===cp)return x}return null}
+function groups(p,d){var g={fbs:0,afternoon:0,evening:0,three:0};p.sugar.forEach(function(x){if(day(x[0])!==d)return;if(x[1]==="FBS")g.fbs+=x[3];else if(x[1]==="BL"||x[1]==="Noon PPBS")g.afternoon+=x[3];else if(x[1]==="BD"||x[1]==="Dinner PPBS")g.evening+=x[3];else if(x[1]==="3 AM")g.three+=x[3]});g.total=g.fbs+g.afternoon+g.evening+g.three;return g}
+function previous(p,cp){var e=find(p,day(Date.now()-86400000),cp);return '<div class="notice" style="margin-bottom:12px">'+(e?"Previous day · <b>"+cp+"</b>: "+e[2]+" mg/dL · "+e[3]+" U insulin":"No previous-day entry for "+cp+".")+'</div>'}
+
+function cp(x){S.checkpoint=x;render()}
+function saveTemp(){var p=patient();if(!p||p.discharged)return;var v=Number(el("tv").value);if(!isFinite(v)||v<80||v>115){alert("Enter a valid temperature in °F.");return}snapshot("Temperature "+v+" °F");var ts=Date.now();p.temp.push([ts,v,currentUser()]);p.temp.sort(function(a,b){return a[0]-b[0]});save();render();apiPost("/api/patients/"+p.id+"/temp",{ts:ts,value:v,enteredBy:currentUser()})}
+function pcm(d){var p=patient();if(!p||p.discharged)return;if(pcm24(p)+d>4000){if(!confirm("This exceeds 4000 mg in the rolling 24-hour window. Give anyway?"))return}snapshot("PCM "+d+" mg");var ts=Date.now();p.pcm.push([ts,d,currentUser()]);save();render();apiPost("/api/patients/"+p.id+"/pcm",{ts:ts,mg:d,enteredBy:currentUser()})}
+function saveSugar(){var p=patient();if(!p||p.discharged)return;var g=Number(el("gv").value),i=Number(el("iv").value);if(!isFinite(g)||g<20||g>1000){alert("Enter a valid glucose value.");return}if(!isFinite(i)||i<0||i>200){alert("Enter a valid insulin dose.");return}snapshot(S.checkpoint+" entry");var ts=Date.now(),thisCp=S.checkpoint;p.sugar.push([ts,thisCp,g,i,currentUser()]);p.last=thisCp;var a=["FBS","BL","Noon PPBS","BD","Dinner PPBS","3 AM"],n=a.indexOf(thisCp);S.checkpoint=a[(n+1)%a.length];save();render();apiPost("/api/patients/"+p.id+"/sugar",{ts:ts,checkpoint:thisCp,glucose:g,insulin:i,enteredBy:currentUser()})}
+function createP(){var n=el("nm").value.trim(),b=el("bd").value.trim();if(!n||!b){alert("Enter patient name and bed.");return}var p={id:String(Date.now()),name:n,bed:b,type:S.newType,discharged:false,last:null,temp:[],pcm:[],sugar:[]};patients.push(p);save();S.pid=p.id;S.screen="patient";S.tab=(p.type==="sugar")?"sugar":"fever";render();apiPost("/api/patients",{id:p.id,name:p.name,bed:p.bed,type:p.type})}
+
+window.openP=openP;window.home=goHome;window.goHome=goHome;window.newP=newP;window.showDischarged=showDischarged;window.setType=setType;window.tab=tab;window.cp=cp;window.saveTemp=saveTemp;window.pcm=pcm;window.saveSugar=saveSugar;window.createP=createP;window.dischargeP=dischargeP;window.undo=undo;window.setUser=setUser;window.setApiBase=setApiBase;window.loadFromApi=loadFromApi;
+loadFromApi();
+})();
+</script>
+</body>
+</html>
